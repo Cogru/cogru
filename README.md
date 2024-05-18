@@ -5,6 +5,11 @@
 
 [![CI](https://github.com/Cogru/cogru/actions/workflows/test.yml/badge.svg)](https://github.com/Cogru/cogru/actions/workflows/test.yml)
 
+## 🚧 Project status
+
+The code in this repository is currently under active development, and may
+therefore change substantially with each commit.
+
 ## ⚜️ License
 
 Copyright 2024-present Cogru Inc.
