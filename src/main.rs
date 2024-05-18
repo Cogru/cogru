@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod server;
 mod handler;
 mod packet;
