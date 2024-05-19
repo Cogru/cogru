@@ -4,13 +4,13 @@
 mod handler;
 mod packet;
 mod server;
-
+use clap::{arg, Arg, Command};
+use dunce;
+use rpassword;
 use server::Server;
-
 use std::io;
+use std::io::Write;
 use tracing_subscriber::{fmt, layer::SubscriberExt};
-
-use clap::{arg, Command};
 
 /// Setup logger rotator.
 ///
@@ -26,13 +26,46 @@ pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
     guard // Don't drop this!
 }
 
-#[tokio::main]
-async fn main() {
+/// Start the server.
+///
+/// # Arguments
+///
+/// * `port` - port to start.
+/// * `password` - password to enter the session.
+async fn start_server(port: u16, password: &str) {
     let _guard = setup_logger();
 
+    let mut server = Server::new("127.0.0.1", port, password);
+    let _ = server.start().await;
+}
+
+fn get_password() -> Option<String> {
+    print!("Set the password: ");
+    io::stdout().flush().unwrap();
+    let password = rpassword::read_password().unwrap();
+
+    print!("Confirm password: ");
+    io::stdout().flush().unwrap();
+    let confirm = rpassword::read_password().unwrap();
+
+    if confirm == password {
+        Some(password)
+    } else {
+        None
+    }
+}
+
+#[tokio::main]
+async fn main() {
     let matches = Command::new("Cogru")
         .version("0.1.0")
         .about("Where the collaboration start!?")
+        .arg(
+            Arg::new("path")
+                .required(false)
+                .help("Workspace directory")
+                .default_value("."),
+        )
         .arg(
             arg!(--port <VALUE>)
                 .required(false)
@@ -41,8 +74,19 @@ async fn main() {
         )
         .get_matches();
 
-    let port = matches.get_one::<String>("port").unwrap().parse::<u16>().unwrap();
+    let path = matches.get_one::<String>("path").unwrap();
+    let current_dir = dunce::canonicalize(path);
 
-    let mut server = Server::new("127.0.0.1".to_string(), port);
-    let _ = server.start().await;
+    println!("{:?}", current_dir);
+
+    let port = matches
+        .get_one::<String>("port")
+        .unwrap()
+        .parse::<u16>()
+        .unwrap();
+
+    let password = get_password().expect("Confirm password doesn't match");
+
+    // Start the server
+    start_server(port, &password).await;
 }
