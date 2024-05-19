@@ -1,13 +1,16 @@
 #![allow(dead_code)]
+#![allow(unused_imports)]
 
-mod server;
 mod handler;
 mod packet;
+mod server;
 
 use server::Server;
 
 use std::io;
 use tracing_subscriber::{fmt, layer::SubscriberExt};
+
+use clap::{arg, Command};
 
 /// Setup logger rotator.
 ///
@@ -26,6 +29,20 @@ pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
 #[tokio::main]
 async fn main() {
     let _guard = setup_logger();
-    let mut server = Server::new("127.0.0.1".to_string(), 8080);
+
+    let matches = Command::new("Cogru")
+        .version("0.1.0")
+        .about("Where the collaboration start!?")
+        .arg(
+            arg!(--port <VALUE>)
+                .required(false)
+                .help("Port number")
+                .default_value("8786"),
+        )
+        .get_matches();
+
+    let port = matches.get_one::<String>("port").unwrap().parse::<u16>().unwrap();
+
+    let mut server = Server::new("127.0.0.1".to_string(), port);
     let _ = server.start().await;
 }

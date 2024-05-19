@@ -13,7 +13,7 @@ use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 const SEPARATOR_LEN: usize = "\r\n".len();
-const BUF_SIZE: usize = 1024;
+const BUF_SIZE: usize = 1024 * 1;
 
 fn get_content_len(line: &str) -> usize {
     if !line.starts_with("Content-Length: ") {

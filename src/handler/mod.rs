@@ -17,8 +17,11 @@ pub fn handle(json: &str) {
     println!("{}: {:?}", "val", val["method"]);
 
     match method {
+        "enter" => {
+            enter::handle(&val);
+        }
         "login" => {
-            login_handler::handle(&val);
+            login::handle(&val);
         }
         _ => {
             tracing::error!("Unkown method request: {:?}", method);
@@ -26,7 +29,13 @@ pub fn handle(json: &str) {
     }
 }
 
-mod login_handler {
+mod enter {
+    pub fn handle(json: &serde_json::Value) {
+        tracing::trace!("method: {:?}", json["method"]);
+    }
+}
+
+mod login {
     pub fn handle(json: &serde_json::Value) {
         tracing::trace!("method: {:?}", json["method"]);
     }
