@@ -4,7 +4,7 @@
 mod handler;
 mod packet;
 mod server;
-use clap::{arg, Arg, Command};
+use clap::{arg, Arg, ArgMatches, Command};
 use dunce;
 use rpassword;
 use server::Server;
@@ -32,13 +32,14 @@ pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
 ///
 /// * `port` - port to start.
 /// * `password` - password to enter the session.
-async fn start_server(port: u16, password: &str) {
+async fn start_server(port: u16, working_dir: &str, password: &str) {
     let _guard = setup_logger();
 
-    let mut server = Server::new("127.0.0.1", port, password);
+    let mut server = Server::new("127.0.0.1", port, working_dir, password);
     let _ = server.start().await;
 }
 
+/// Set up the session password.
 fn get_password() -> Option<String> {
     print!("Set the password: ");
     io::stdout().flush().unwrap();
@@ -55,11 +56,22 @@ fn get_password() -> Option<String> {
     }
 }
 
+/// Return the workspace path.
+///
+/// This is the directory we want to watch and sync.
+fn get_workspace(matches: &ArgMatches) -> String {
+    let path = matches.get_one::<String>("path").unwrap();
+    dunce::canonicalize(path)
+        .expect("Invalid workspace")
+        .display()
+        .to_string()
+}
+
 #[tokio::main]
 async fn main() {
     let matches = Command::new("Cogru")
         .version("0.1.0")
-        .about("Where the collaboration start!?")
+        .about("cogru - Where the collaboration start!?")
         .arg(
             Arg::new("path")
                 .required(false)
@@ -74,10 +86,7 @@ async fn main() {
         )
         .get_matches();
 
-    let path = matches.get_one::<String>("path").unwrap();
-    let current_dir = dunce::canonicalize(path);
-
-    println!("{:?}", current_dir);
+    let current_dir = get_workspace(&matches);
 
     let port = matches
         .get_one::<String>("port")
@@ -88,5 +97,5 @@ async fn main() {
     let password = get_password().expect("Confirm password doesn't match");
 
     // Start the server
-    start_server(port, &password).await;
+    start_server(port, &current_dir, &password).await;
 }

@@ -149,14 +149,16 @@ impl Connection {
 pub struct Server {
     host: String,
     port: u16,
+    path: String,
     password: String,
 }
 
 impl Server {
-    pub fn new(_host: &str, _port: u16, _password: &str) -> Self {
+    pub fn new(_host: &str, _port: u16, _path: &str, _password: &str) -> Self {
         Self {
             host: _host.to_string(),
             port: _port,
+            path: _path.to_string(),
             password: _password.to_string(),
         }
     }
