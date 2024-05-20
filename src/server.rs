@@ -8,7 +8,7 @@
  */
 use crate::handler;
 use crate::packet;
-
+use serde_json::json;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 
@@ -26,21 +26,23 @@ fn get_content_len(line: &str) -> usize {
 }
 
 struct Connection {
-    pub socket: tokio::net::TcpStream,
+    pub stream: tokio::net::TcpStream,
     pub addr: std::net::SocketAddr,
     read_buf: [u8; BUF_SIZE],
     data: Vec<u8>,
     packets: Vec<packet::Packet>,
+    entered: bool,
 }
 
 impl Connection {
-    pub fn new(_socket: tokio::net::TcpStream, _addr: std::net::SocketAddr) -> Self {
+    pub fn new(_stream: tokio::net::TcpStream, _addr: std::net::SocketAddr) -> Self {
         let connection = Self {
-            socket: _socket,
+            stream: _stream,
             addr: _addr,
             read_buf: [0; BUF_SIZE],
             data: Vec::new(),
             packets: Vec::new(),
+            entered: false,
         };
         connection
     }
@@ -55,7 +57,7 @@ impl Connection {
     }
 
     pub async fn read(&mut self) {
-        let _ = match self.socket.read(&mut self.read_buf).await {
+        let _ = match self.stream.read(&mut self.read_buf).await {
             // socket closed
             Ok(n) if n == 0 => return,
             Ok(n) => {
@@ -72,7 +74,7 @@ impl Connection {
                 n
             }
             Err(e) => {
-                println!("failed to read from socket; err = {:?}", e);
+                println!("Failed to read from socket; err = {:?}", e);
                 return;
             }
         };
@@ -134,11 +136,17 @@ impl Connection {
         }
     }
 
-    pub async fn write(&mut self, buf: [u8; BUF_SIZE]) {
-        if let Err(e) = self.socket.write_all(&buf).await {
-            tracing::warn!("failed to write to socket {:?}; err = {:?}", self.socket, e);
+    async fn write(&mut self, buf: &[u8]) {
+        if let Err(e) = self.stream.write_all(&buf).await {
+            tracing::warn!("Failed to write to socket {:?}; err = {:?}", self.stream, e);
             return;
         }
+    }
+
+    pub async fn send(&mut self, params: serde_json::Value) {
+        let data_str = params.to_string();
+        let data = data_str.as_bytes();
+        self.write(&data).await;
     }
 
     pub fn to_string(&self) -> String {
@@ -151,7 +159,7 @@ pub struct Server {
     port: u16,
     path: String,
     password: String,
-    connections: Vec<Connection>,
+    //connections: Vec<Connection>,
 }
 
 impl Server {
@@ -161,7 +169,7 @@ impl Server {
             port: _port,
             path: _path.to_string(),
             password: _password.to_string(),
-            connections: Vec::new(),
+            //connections: Vec::new(),
         }
     }
 
