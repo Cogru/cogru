@@ -25,7 +25,7 @@ fn get_content_len(line: &str) -> usize {
     len_str.parse::<usize>().unwrap()
 }
 
-struct Connection {
+pub struct Connection {
     pub stream: tokio::net::TcpStream,
     pub addr: std::net::SocketAddr,
     read_buf: [u8; BUF_SIZE],
@@ -111,7 +111,7 @@ impl Connection {
                         boundary += content_len;
 
                         let data = &line[..content_len];
-                        handler::handle(data);
+                        handler::handle(&mut self, data);
                         //println!("{}: {}", "receive all", data);
 
                         process = true;

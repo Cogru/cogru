@@ -6,8 +6,9 @@
  * $Notice: See LICENSE.txt for modification and distribution information
  *                   Copyright © 2024 by Shen, Jen-Chieh $
  */
+use crate::server;
 
-pub fn handle(json: &str) {
+pub fn handle(connection: &mut server::Connection, json: &str) {
     let v = serde_json::from_str(json);
     let val: serde_json::Value = v.unwrap();
 
@@ -18,10 +19,10 @@ pub fn handle(json: &str) {
 
     match method {
         "enter" => {
-            enter::handle(&val);
+            enter::handle(connection, &val);
         }
-        "login" => {
-            login::handle(&val);
+        "exit" => {
+            // TODO: ..
         }
         _ => {
             tracing::error!("Unkown method request: {:?}", method);
@@ -29,14 +30,14 @@ pub fn handle(json: &str) {
     }
 }
 
+/// Enter session
 mod enter {
-    pub fn handle(json: &serde_json::Value) {
-        tracing::trace!("method: {:?}", json["method"]);
-    }
-}
+    use crate::server;
 
-mod login {
-    pub fn handle(json: &serde_json::Value) {
+    pub fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
         tracing::trace!("method: {:?}", json["method"]);
+        connection.send(serde_json::json!({
+            "": "",
+        }));
     }
 }
