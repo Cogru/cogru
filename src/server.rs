@@ -9,8 +9,8 @@
 use crate::handler;
 use crate::packet;
 
-use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpListener;
 
 const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
@@ -45,7 +45,7 @@ impl Connection {
         connection
     }
 
-    pub async fn start(&mut self) {
+    pub async fn run(&mut self) {
         // In a loop, read data from the socket and write the data back.
         loop {
             self.read().await;
@@ -151,6 +151,7 @@ pub struct Server {
     port: u16,
     path: String,
     password: String,
+    connections: Vec<Connection>,
 }
 
 impl Server {
@@ -160,6 +161,7 @@ impl Server {
             port: _port,
             path: _path.to_string(),
             password: _password.to_string(),
+            connections: Vec::new(),
         }
     }
 
@@ -177,8 +179,10 @@ impl Server {
             let mut connection = Connection::new(socket, addr);
             tracing::info!("New connection from {}", connection.to_string());
 
+            //self.connections.push(connection);
+
             tokio::spawn(async move {
-                connection.start().await;
+                connection.run().await;
             });
         }
     }
