@@ -81,7 +81,7 @@ impl Connection {
     }
 
     pub fn process(&mut self) {
-        let data= &self.data.clone();
+        let data = &self.data.clone();
         let decrypted = String::from_utf8_lossy(data);
 
         let chopped = decrypted.split("\r\n");
