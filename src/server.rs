@@ -148,7 +148,8 @@ impl Connection {
     }
 
     pub async fn send(&mut self, params: serde_json::Value) {
-        let data_str = params.to_string();
+        let json_str = params.to_string();
+        let data_str = format!("Content-Length: {}\r\n\r\n{}", json_str.len(), json_str);
         let data = data_str.as_bytes();
         self.write(&data).await;
     }

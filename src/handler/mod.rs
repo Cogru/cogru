@@ -18,6 +18,9 @@ pub async fn handle(connection: &mut server::Connection, json: &str) {
     println!("{}: {:?}", "val", val["method"]);
 
     match method {
+        "ping" => {
+            ping::handle(connection, &val).await;
+        }
         "enter" => {
             enter::handle(connection, &val).await;
         }
@@ -30,15 +33,29 @@ pub async fn handle(connection: &mut server::Connection, json: &str) {
     }
 }
 
+/// Ping pong
+mod ping {
+    use crate::server;
+
+    pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
+        tracing::trace!("method: {:?}", json["method"]);
+        connection
+            .send(serde_json::json!({
+                "method": "pong",
+            }))
+            .await;
+    }
+}
+
 /// Enter session
 mod enter {
     use crate::server;
 
     pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
-        tracing::trace!("method: {:?}", json["method"]);
-        connection.send(serde_json::json!({
-            "jsonrpc": "2.0",
-            "method": "enter",
-        })).await;
+        connection
+            .send(serde_json::json!({
+                "method": "enter",
+            }))
+            .await;
     }
 }
