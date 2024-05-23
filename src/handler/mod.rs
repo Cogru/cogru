@@ -8,7 +8,7 @@
  */
 use crate::server;
 
-pub fn handle(connection: &mut server::Connection, json: &str) {
+pub async fn handle(connection: &mut server::Connection, json: &str) {
     let v = serde_json::from_str(json);
     let val: serde_json::Value = v.unwrap();
 
@@ -19,7 +19,7 @@ pub fn handle(connection: &mut server::Connection, json: &str) {
 
     match method {
         "enter" => {
-            enter::handle(connection, &val);
+            enter::handle(connection, &val).await;
         }
         "exit" => {
             // TODO: ..
@@ -34,10 +34,11 @@ pub fn handle(connection: &mut server::Connection, json: &str) {
 mod enter {
     use crate::server;
 
-    pub fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
+    pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
         tracing::trace!("method: {:?}", json["method"]);
         connection.send(serde_json::json!({
-            "": "",
-        }));
+            "jsonrpc": "2.0",
+            "method": "enter",
+        })).await;
     }
 }

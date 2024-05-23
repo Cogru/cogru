@@ -12,6 +12,8 @@ use serde_json::json;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 
+use async_recursion::async_recursion;
+
 const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
 
@@ -69,7 +71,7 @@ impl Connection {
                     self.data.append(&mut new_data.to_vec());
                 }
 
-                self.process();
+                self.process().await;
 
                 n
             }
@@ -80,7 +82,8 @@ impl Connection {
         };
     }
 
-    pub fn process(&mut self) {
+    #[async_recursion]
+    pub async fn process(&mut self) {
         let data = &self.data.clone();
         let decrypted = String::from_utf8_lossy(data);
 
@@ -112,7 +115,7 @@ impl Connection {
                         boundary += content_len;
 
                         let data = &line[..content_len];
-                        handler::handle(self, data);
+                        handler::handle(self, data).await;
                         //println!("{}: {}", "receive all", data);
 
                         process = true;
@@ -133,7 +136,7 @@ impl Connection {
                 boundary,
                 String::from_utf8_lossy(&self.data)
             );
-            self.process();
+            self.process().await;
         }
     }
 
