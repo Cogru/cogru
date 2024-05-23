@@ -81,7 +81,8 @@ impl Connection {
     }
 
     pub fn process(&mut self) {
-        let decrypted = String::from_utf8_lossy(&self.data);
+        let data= &self.data.clone();
+        let decrypted = String::from_utf8_lossy(data);
 
         let chopped = decrypted.split("\r\n");
         let size = chopped.clone().count();
@@ -111,7 +112,7 @@ impl Connection {
                         boundary += content_len;
 
                         let data = &line[..content_len];
-                        handler::handle(&mut self, data);
+                        handler::handle(self, data);
                         //println!("{}: {}", "receive all", data);
 
                         process = true;
