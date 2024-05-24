@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![allow(unused_variables)]
 
 /**
  * Copyright (c) 2024 Cogru Inc.
@@ -47,7 +48,7 @@ pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
 ///
 /// * `port` - port to start.
 /// * `password` - password to enter the session.
-async fn start_server(port: u16, working_dir: &str, password: &str) {
+async fn start_server(port: u16, working_dir: &str, password: Option<String>) {
     let _guard = setup_logger();
 
     let mut server = Server::new("127.0.0.1", port, working_dir, password);
@@ -99,6 +100,15 @@ async fn main() {
                 .help("Port number")
                 .default_value("8786"),
         )
+        .arg(
+            Arg::new("no_password")
+                .long("no-password")
+                .action(clap::ArgAction::SetTrue)
+                .required(false)
+                .num_args(0)
+                .help("Don't require password to enter the server")
+                .default_value("false"),
+        )
         .get_matches();
 
     let current_dir = get_workspace(&matches);
@@ -109,8 +119,14 @@ async fn main() {
         .parse::<u16>()
         .unwrap();
 
-    let password = get_password().expect("Confirm password doesn't match");
+    let no_password = matches.get_flag("no_password");
+
+    let password = if no_password {
+        Some(String::from(""))
+    } else {
+        Some(get_password().expect("Confirm password doesn't match"))
+    };
 
     // Start the server
-    start_server(port, &current_dir, &password).await;
+    start_server(port, &current_dir, password).await;
 }
