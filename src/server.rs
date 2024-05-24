@@ -24,16 +24,6 @@ use async_recursion::async_recursion;
 const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
 
-fn get_content_len(line: &str) -> usize {
-    if !line.starts_with("Content-Length: ") {
-        tracing::error!("Invalid content length: {:?}", line);
-        return 0;
-    }
-    let rm_len = "Content-Length: ".len();
-    let len_str = &line[rm_len..];
-    len_str.parse::<usize>().unwrap()
-}
-
 pub struct Connection {
     pub stream: tokio::net::TcpStream,
     pub addr: std::net::SocketAddr,
@@ -56,6 +46,7 @@ impl Connection {
         connection
     }
 
+    /// Logic loop.
     pub async fn run(&mut self) {
         // In a loop, read data from the socket and write the data back.
         loop {
@@ -65,6 +56,22 @@ impl Connection {
         }
     }
 
+    /// Return the contnet length.
+    ///
+    /// # Arguments
+    ///
+    /// * `line` - The line string.
+    fn get_content_len(line: &str) -> usize {
+        if !line.starts_with("Content-Length: ") {
+            tracing::error!("Invalid content length: {:?}", line);
+            return 0;
+        }
+        let rm_len = "Content-Length: ".len();
+        let len_str = &line[rm_len..];
+        len_str.parse::<usize>().unwrap()
+    }
+
+    /// Raw data receiver.
     pub async fn read(&mut self) {
         let _ = match self.stream.read(&mut self.read_buf).await {
             // socket closed
@@ -89,6 +96,7 @@ impl Connection {
         };
     }
 
+    /// Process through the request if available.
     #[async_recursion]
     pub async fn process(&mut self) {
         let data = &self.data.clone();
@@ -112,7 +120,7 @@ impl Connection {
             match current_op {
                 0 => {
                     boundary += line.len() + SEPARATOR_LEN;
-                    content_len = get_content_len(line);
+                    content_len = Connection::get_content_len(line);
                 }
                 1 => {
                     boundary += line.len() + SEPARATOR_LEN;
@@ -147,6 +155,11 @@ impl Connection {
         }
     }
 
+    /// Write the raw data through the tunnel.
+    ///
+    /// # Arguments
+    ///
+    /// * `buf` - The buffer; vector of bytes.
     async fn write(&mut self, buf: &[u8]) {
         if let Err(e) = self.stream.write_all(&buf).await {
             tracing::warn!("Failed to write to socket {:?}; err = {:?}", self.stream, e);
@@ -154,6 +167,11 @@ impl Connection {
         }
     }
 
+    /// Send the CSP JSON request.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - JSON object.
     pub async fn send(&mut self, params: serde_json::Value) {
         let json_str = params.to_string();
         let data_str = format!("Content-Length: {}\r\n\r\n{}", json_str.len(), json_str);
@@ -161,6 +179,7 @@ impl Connection {
         self.write(&data).await;
     }
 
+    /// Return the connection string.
     pub fn to_string(&self) -> String {
         format!("{}", &self.addr)
     }
@@ -185,10 +204,14 @@ impl Server {
         }
     }
 
+    /// Return the address name.
+    ///
+    /// The host + port.
     fn addr(&mut self) -> String {
         self.host.to_string() + ":" + &self.port.to_string()
     }
 
+    /// Start the server.
     pub async fn start(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         tracing::info!("Listening on port {}", self.addr());
 

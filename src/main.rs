@@ -83,6 +83,7 @@ fn get_workspace(matches: &ArgMatches) -> String {
         .to_string()
 }
 
+/// Program Entry
 #[tokio::main]
 async fn main() {
     let matches = Command::new("Cogru")
