@@ -48,11 +48,8 @@ impl Connection {
 
     /// Logic loop.
     pub async fn run(&mut self) {
-        // In a loop, read data from the socket and write the data back.
         loop {
             self.read().await;
-            // Write the data back
-            //self.write(self.read_buf).await;
         }
     }
 
