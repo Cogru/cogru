@@ -35,6 +35,7 @@ pub async fn handle(connection: &mut server::Connection, json: &str) {
 
 /// Ping pong
 mod ping {
+    use chrono;
     use crate::server;
 
     pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
@@ -42,6 +43,7 @@ mod ping {
         connection
             .send(serde_json::json!({
                 "method": "pong",
+                "timestamp": chrono::offset::Local::now().to_string(),
             }))
             .await;
     }
