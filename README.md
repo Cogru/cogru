@@ -13,7 +13,7 @@ therefore change substantially with each commit.
 ## 🔧 Usage
 
 Run the server in the current working directory without requiring the password
-to enter.
+to be entered.
 
 ```sh
 $ cogru . --no-password
