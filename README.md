@@ -10,6 +10,15 @@
 The code in this repository is currently under active development, and may
 therefore change substantially with each commit.
 
+## 🔧 Usage
+
+Run the server in the current working directory without requiring the password
+to enter.
+
+```sh
+$ cogru . --no-password
+```
+
 ## ⚜️ License
 
 Copyright 2024-present Cogru Inc.
