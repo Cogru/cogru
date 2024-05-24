@@ -18,6 +18,9 @@ pub async fn handle(connection: &mut server::Connection, json: &str) {
     println!("{}: {:?}", "val", val["method"]);
 
     match method {
+        "test" => {
+            test::handle(connection, &val).await;
+        }
         "ping" => {
             ping::handle(connection, &val).await;
         }
@@ -33,18 +36,30 @@ pub async fn handle(connection: &mut server::Connection, json: &str) {
     }
 }
 
+mod test {
+    use crate::server;
+
+    pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
+        tracing::trace!("method: {:?}", json["method"]);
+        connection
+            .send(serde_json::json!({
+                "method": "test",
+                "some": "ラウトは難しいです！",
+            }))
+            .await;
+    }
+}
+
 /// Ping pong
 mod ping {
     use crate::server;
     use chrono;
 
     pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
-        tracing::trace!("method: {:?}", json["method"]);
         connection
             .send(serde_json::json!({
                 "method": "pong",
-                //"timestamp": chrono::offset::Local::now().to_string(),
-                "some": "ラウトは難しいです！",
+                "timestamp": chrono::offset::Local::now().to_string(),
             }))
             .await;
     }
