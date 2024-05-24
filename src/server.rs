@@ -1,10 +1,7 @@
 /**
- * $File: server.rs $
- * $Date: 2024-05-17 22:19:28 $
- * $Revision: $
- * $Creator: Jen-Chieh Shen $
- * $Notice: See LICENSE.txt for modification and distribution information
- *                   Copyright © 2024 by Shen, Jen-Chieh $
+ * Copyright (c) Cogru Inc. All rights reserved.
+ * Licensed under the MIT License.
+ * See License.txt in the project root for license information.
  */
 use crate::handler;
 use crate::packet;

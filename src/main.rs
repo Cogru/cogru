@@ -1,6 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
+/**
+ * Copyright (c) Cogru Inc. All rights reserved.
+ * Licensed under the MIT License.
+ * See License.txt in the project root for license information.
+ */
 mod handler;
 mod packet;
 mod server;
