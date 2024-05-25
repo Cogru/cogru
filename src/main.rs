@@ -107,7 +107,7 @@ async fn main() {
                 .action(clap::ArgAction::SetTrue)
                 .required(false)
                 .num_args(0)
-                .help("Don't require password to enter the server")
+                .help("Don't require password to enter the room")
                 .default_value("false"),
         )
         .get_matches();
