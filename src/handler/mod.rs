@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::server;
+use crate::connection;
 
-pub async fn handle(connection: &mut server::Connection, json: &str) {
+pub async fn handle(connection: &mut connection::Connection, json: &str) {
     let v = serde_json::from_str(json);
     let val: serde_json::Value = v.unwrap();
 
@@ -44,9 +44,9 @@ pub async fn handle(connection: &mut server::Connection, json: &str) {
 }
 
 mod test {
-    use crate::server;
+    use crate::connection;
 
-    pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
+    pub async fn handle(connection: &mut connection::Connection, json: &serde_json::Value) {
         tracing::trace!("method: {:?}", json["method"]);
         connection
             .send(serde_json::json!({
@@ -59,10 +59,10 @@ mod test {
 
 /// Ping pong
 mod ping {
-    use crate::server;
+    use crate::connection;
     use chrono;
 
-    pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
+    pub async fn handle(connection: &mut connection::Connection, json: &serde_json::Value) {
         connection
             .send(serde_json::json!({
                 "method": "pong",
@@ -74,9 +74,9 @@ mod ping {
 
 /// Enter session
 mod enter {
-    use crate::server;
+    use crate::connection;
 
-    pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
+    pub async fn handle(connection: &mut connection::Connection, json: &serde_json::Value) {
         connection.entered = true;
         connection
             .send(serde_json::json!({

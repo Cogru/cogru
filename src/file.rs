@@ -15,9 +15,10 @@
  */
 
 struct Mouse {
-    point: u32,
+    point: u64,
 }
 
 pub struct File {
+    path: String, // absolute path
     mouses: Vec<Mouse>,
 }

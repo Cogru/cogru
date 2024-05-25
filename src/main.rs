@@ -17,8 +17,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+mod connection;
 mod handler;
-mod packet;
 mod server;
 use clap::{arg, Arg, ArgMatches, Command};
 use dunce;
