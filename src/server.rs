@@ -30,7 +30,7 @@ pub struct Connection {
     read_buf: [u8; BUF_SIZE],
     data: Vec<u8>,
     packets: Vec<packet::Packet>,
-    entered: bool,
+    pub entered: bool,
 }
 
 impl Connection {
