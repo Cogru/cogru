@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 use crate::connection;
+use crate::room::*;
 use tokio::net::TcpListener;
 
 pub struct Server {
@@ -22,6 +23,7 @@ pub struct Server {
     path: String,
     password: Option<String>,
     //connections: Vec<Connection>,
+    room: Room,
 }
 
 impl Server {
@@ -32,6 +34,7 @@ impl Server {
             path: _path.to_string(),
             password: _password,
             //connections: Vec::new(),
+            room: Room::new(),
         }
     }
 

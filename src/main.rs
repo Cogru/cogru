@@ -20,6 +20,8 @@
 mod connection;
 mod handler;
 mod server;
+mod room;
+mod file;
 use clap::{arg, Arg, ArgMatches, Command};
 use dunce;
 use rpassword;
