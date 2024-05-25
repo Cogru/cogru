@@ -16,11 +16,22 @@
 use crate::file::*;
 
 pub struct Room {
+    password: Option<String>,
+    path: String,
     files: Vec<File>,
 }
 
 impl Room {
-    pub fn new() -> Self {
-        Self { files: Vec::new() }
+    pub fn new(_path: &str, _password: Option<String>) -> Self {
+        Self {
+            path: _path.to_string(),
+            password: _password,
+            files: Vec::new()
+        }
+    }
+
+    /// Return true when room has password
+    pub fn has_password(&self) -> bool {
+        self.password != None
     }
 }

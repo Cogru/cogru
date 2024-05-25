@@ -22,6 +22,7 @@ mod handler;
 mod server;
 mod room;
 mod file;
+use crate::room::*;
 use clap::{arg, Arg, ArgMatches, Command};
 use dunce;
 use rpassword;
@@ -53,7 +54,8 @@ pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
 async fn start_server(port: u16, working_dir: &str, password: Option<String>) {
     let _guard = setup_logger();
 
-    let mut server = Server::new("127.0.0.1", port, working_dir, password);
+    let room = Room::new(working_dir, password);
+    let mut server = Server::new("127.0.0.1", port, room);
     let _ = server.start().await;
 }
 
