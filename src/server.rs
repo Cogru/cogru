@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::connection;
+use crate::connection::*;
 use crate::room::*;
 use tokio::net::TcpListener;
 
@@ -49,7 +49,7 @@ impl Server {
 
         loop {
             let (socket, addr) = listener.accept().await?;
-            let mut conn = connection::Connection::new(socket, addr);
+            let mut conn = Connection::new(socket, addr);
             tracing::info!("New connection from {}", conn.to_string());
 
             //self.connections.push(connection);

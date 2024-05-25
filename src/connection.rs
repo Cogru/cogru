@@ -15,21 +15,24 @@
  */
 use crate::handler;
 use async_recursion::async_recursion;
+use serde_json::Value;
+use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 
 const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
 
 pub struct Connection {
-    pub stream: tokio::net::TcpStream,
-    pub addr: std::net::SocketAddr,
+    pub stream: TcpStream,
+    pub addr: SocketAddr,
     read_buf: [u8; BUF_SIZE],
     data: Vec<u8>,
     pub entered: bool,
 }
 
 impl Connection {
-    pub fn new(_stream: tokio::net::TcpStream, _addr: std::net::SocketAddr) -> Self {
+    pub fn new(_stream: TcpStream, _addr: SocketAddr) -> Self {
         let connection = Self {
             stream: _stream,
             addr: _addr,
@@ -163,7 +166,7 @@ impl Connection {
     /// # Arguments
     ///
     /// * `params` - JSON object.
-    pub async fn send(&mut self, params: serde_json::Value) {
+    pub async fn send(&mut self, params: Value) {
         let json_str = params.to_string();
         let data_str = format!("Content-Length: {}\r\n\r\n{}", json_str.len(), json_str);
         let data = data_str.as_bytes();
