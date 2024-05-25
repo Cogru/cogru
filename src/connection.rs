@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 use crate::handler;
+use crate::room::*;
 use async_recursion::async_recursion;
 use serde_json::Value;
 use std::net::SocketAddr;
@@ -33,14 +34,13 @@ pub struct Connection {
 
 impl Connection {
     pub fn new(_stream: TcpStream, _addr: SocketAddr) -> Self {
-        let connection = Self {
+        Self {
             stream: _stream,
             addr: _addr,
             read_buf: [0; BUF_SIZE],
             data: Vec::new(),
             entered: false,
-        };
-        connection
+        }
     }
 
     /// Logic loop.
