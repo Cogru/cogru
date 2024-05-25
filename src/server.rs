@@ -216,7 +216,7 @@ impl Server {
 
         loop {
             let (socket, addr) = listener.accept().await?;
-            let mut connection = Connection::new(socket, addr);
+            let mut connection = Connection::new( socket, addr);
             tracing::info!("New connection from {}", connection.to_string());
 
             //self.connections.push(connection);

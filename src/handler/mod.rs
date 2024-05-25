@@ -77,7 +77,6 @@ mod enter {
     use crate::server;
 
     pub async fn handle(connection: &mut server::Connection, json: &serde_json::Value) {
-        
         connection.entered = true;
         connection
             .send(serde_json::json!({
