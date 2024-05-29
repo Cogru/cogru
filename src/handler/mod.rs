@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 use crate::connection::*;
+use crate::room::*;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-pub async fn handle(connection: &mut Connection, json: &str) {
+pub async fn handle(connection: &mut Connection, room: &Arc<Mutex<Room>>, json: &str) {
     let v = serde_json::from_str(json);
     let val: serde_json::Value = v.unwrap();
 
@@ -23,6 +26,8 @@ pub async fn handle(connection: &mut Connection, json: &str) {
 
     let method: &str = val["method"].as_str().unwrap();
     println!("{}: {:?}", "val", val["method"]);
+
+    let mut room = room.lock().await;
 
     match method {
         "test" => {
@@ -49,7 +54,7 @@ mod test {
     pub async fn handle(connection: &mut Connection, json: &serde_json::Value) {
         tracing::trace!("method: {:?}", json["method"]);
         connection
-            .send(serde_json::json!({
+            .send(&serde_json::json!({
                 "method": "test",
                 "some": "ラウトは難しいです！",
             }))
@@ -64,7 +69,7 @@ mod ping {
 
     pub async fn handle(connection: &mut Connection, json: &serde_json::Value) {
         connection
-            .send(serde_json::json!({
+            .send(&serde_json::json!({
                 "method": "pong",
                 "timestamp": chrono::offset::Local::now().to_string(),
             }))
@@ -79,7 +84,7 @@ mod enter {
     pub async fn handle(connection: &mut Connection, json: &serde_json::Value) {
         connection.entered = true;
         connection
-            .send(serde_json::json!({
+            .send(&serde_json::json!({
                 "method": "enter_success",
             }))
             .await;

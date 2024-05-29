@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
+struct Region {
+    start: u64,
+    end: u64,
+}
+
 struct Mouse {
     point: u64,
 }
 
+struct User {
+    mouse: Mouse,
+    region: Region,
+}
+
 pub struct File {
-    path: String, // absolute path
-    mouses: Vec<Mouse>,
+    path: String,     // absolute path
+    users: Vec<User>, // a list of users in the file
 }

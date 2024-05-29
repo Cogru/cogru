@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::connection::*;
 use crate::file::*;
+use serde_json::Value;
 
 pub struct Room {
-    password: Option<String>,
-    path: String,
-    files: Vec<File>,
+    password: Option<String>,     // room password
+    path: String,                 // workspace path
+    files: Vec<File>,             // files are being visited
+    connections: Vec<Connection>, // Connections in this room
 }
 
 impl Room {
@@ -26,12 +29,20 @@ impl Room {
         Self {
             path: _path.to_string(),
             password: _password,
-            files: Vec::new()
+            files: Vec::new(),
+            connections: Vec::new(),
         }
     }
 
     /// Return true when room has password
     pub fn has_password(&self) -> bool {
         self.password != None
+    }
+
+    ///  Send data to all clients in this room.
+    pub async fn broadcast(&mut self, params: &Value) {
+        for conn in self.connections.iter_mut() {
+            conn.send(params).await;
+        }
     }
 }

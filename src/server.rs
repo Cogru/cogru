@@ -15,13 +15,14 @@
  */
 use crate::connection::*;
 use crate::room::*;
+use std::sync::Arc;
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 
 pub struct Server {
     host: String,
     port: u16,
-    //connections: Vec<Connection>,
-    room: Room,
+    room: Arc<Mutex<Room>>,
 }
 
 impl Server {
@@ -29,8 +30,7 @@ impl Server {
         Self {
             host: _host.to_string(),
             port: _port,
-            //connections: Vec::new(),
-            room: _room,
+            room: Arc::new(Mutex::new(_room)),
         }
     }
 
@@ -42,20 +42,24 @@ impl Server {
     }
 
     /// Start the server.
+    ///
+    /// See https://github.com/tokio-rs/tokio/blob/master/examples/chat.rs
     pub async fn start(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         tracing::info!("Listening on port {}", self.addr());
 
         let listener = TcpListener::bind(self.addr()).await?;
 
+        // TODO: Add error handling.
         loop {
-            let (socket, addr) = listener.accept().await?;
-            let mut conn = Connection::new(socket, addr);
+            let (stream, addr) = listener.accept().await?;
+            let mut conn = Connection::new(stream, addr);
             tracing::info!("New connection from {}", conn.to_string());
 
-            //self.connections.push(connection);
+            // Clone a handle to the `Shared` state for the new connection.
+            let state = Arc::clone(&self.room);
 
             tokio::spawn(async move {
-                conn.run().await;
+                conn.run(state).await;
             });
         }
     }

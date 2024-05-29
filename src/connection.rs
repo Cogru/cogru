@@ -18,8 +18,10 @@ use crate::room::*;
 use async_recursion::async_recursion;
 use serde_json::Value;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tokio::sync::Mutex;
 
 const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
@@ -44,9 +46,9 @@ impl Connection {
     }
 
     /// Logic loop.
-    pub async fn run(&mut self) {
+    pub async fn run(&mut self, room: Arc<Mutex<Room>>) {
         loop {
-            self.read().await;
+            self.read(room.clone()).await;
         }
     }
 
@@ -66,7 +68,7 @@ impl Connection {
     }
 
     /// Raw data receiver.
-    pub async fn read(&mut self) {
+    pub async fn read(&mut self, room: Arc<Mutex<Room>>) {
         let _ = match self.stream.read(&mut self.read_buf).await {
             // socket closed
             Ok(n) if n == 0 => return,
@@ -79,7 +81,7 @@ impl Connection {
                     self.data.append(&mut new_data.to_vec());
                 }
 
-                self.process().await;
+                self.process(&room).await;
 
                 n
             }
@@ -92,7 +94,7 @@ impl Connection {
 
     /// Process through the request if available.
     #[async_recursion]
-    pub async fn process(&mut self) {
+    pub async fn process(&mut self, room: &Arc<Mutex<Room>>) {
         let data = &self.data.clone();
         let decrypted = String::from_utf8_lossy(data);
 
@@ -124,7 +126,7 @@ impl Connection {
                         boundary += content_len;
 
                         let data = &line[..content_len];
-                        handler::handle(self, data).await;
+                        handler::handle(self, room, data).await;
                         //println!("{}: {}", "receive all", data);
 
                         process = true;
@@ -145,7 +147,7 @@ impl Connection {
                 boundary,
                 String::from_utf8_lossy(&self.data)
             );
-            self.process().await;
+            self.process(room).await;
         }
     }
 
@@ -166,7 +168,7 @@ impl Connection {
     /// # Arguments
     ///
     /// * `params` - JSON object.
-    pub async fn send(&mut self, params: Value) {
+    pub async fn send(&mut self, params: &Value) {
         let json_str = params.to_string();
         let data_str = format!("Content-Length: {}\r\n\r\n{}", json_str.len(), json_str);
         let data = data_str.as_bytes();
