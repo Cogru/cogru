@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 use crate::connection::*;
+use crate::client::*;
 use crate::file::*;
 use serde_json::Value;
 
@@ -21,7 +22,7 @@ pub struct Room {
     password: Option<String>,     // room password
     path: String,                 // workspace path
     files: Vec<File>,             // files are being visited
-    connections: Vec<Connection>, // Connections in this room
+    clients: Vec<Client>, // Connections in this room
 }
 
 impl Room {
@@ -30,7 +31,7 @@ impl Room {
             path: _path.to_string(),
             password: _password,
             files: Vec::new(),
-            connections: Vec::new(),
+            clients: Vec::new(),
         }
     }
 
@@ -53,14 +54,14 @@ impl Room {
         return self.password.clone().unwrap() == password;
     }
 
-    pub fn add_client(&mut self, connection: &mut Connection) {
-        //self.connections.push(connection);
+    pub fn add_client(&mut self, client:&mut Client) {
+        //self.clients.push(client);
     }
 
     ///  Send data to all clients in this room.
     pub async fn broadcast(&mut self, params: &Value) {
-        for conn in self.connections.iter_mut() {
-            conn.send(params).await;
+        for conn in self.clients.iter_mut() {
+            conn.get_connection_mut().send(params).await;
         }
     }
 }

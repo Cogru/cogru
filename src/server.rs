@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::client::*;
 use crate::connection::*;
 use crate::room::*;
 use std::sync::Arc;
@@ -52,17 +53,16 @@ impl Server {
         // TODO: Add error handling.
         loop {
             let (stream, addr) = listener.accept().await?;
-            let mut conn = Connection::new(stream, addr);
+            let conn = Connection::new(stream, addr);
             tracing::info!("New connection from {}", conn.to_string());
 
             // Clone a handle to the `Shared` state for the new connection.
             let room = Arc::clone(&self.room);
 
             tokio::spawn(async move {
-                //run(&mut conn, state).await;
-                conn.run(room.clone()).await;
+                let mut client = Client::new(conn, room.clone());
+                client.run().await;
             });
         }
     }
 }
-

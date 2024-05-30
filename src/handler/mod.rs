@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::client::*;
 use crate::connection::*;
 use crate::room::*;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-pub async fn handle(connection: &mut Connection, room: &Arc<Mutex<Room>>, json: &str) {
+pub async fn handle(client: &mut Client, json: &str) {
     let v = serde_json::from_str(json);
     let val: serde_json::Value = v.unwrap();
 
@@ -27,17 +28,15 @@ pub async fn handle(connection: &mut Connection, room: &Arc<Mutex<Room>>, json: 
     let method: &str = val["method"].as_str().unwrap();
     println!("{}: {:?}", "val", val["method"]);
 
-    let mut room = room.lock().await;
-
     match method {
         "test" => {
-            test::handle(connection, &val).await;
+            test::handle(client, &val).await;
         }
         "ping" => {
-            ping::handle(connection, &val).await;
+            ping::handle(client, &val).await;
         }
         "enter" => {
-            enter::handle(connection, &mut room, &val).await;
+            enter::handle(client, &val).await;
         }
         "exit" => {
             // TODO: ..
@@ -49,11 +48,13 @@ pub async fn handle(connection: &mut Connection, room: &Arc<Mutex<Room>>, json: 
 }
 
 mod test {
+    use crate::client::*;
     use crate::connection::*;
 
-    pub async fn handle(connection: &mut Connection, json: &serde_json::Value) {
+    pub async fn handle(client: &mut Client, json: &serde_json::Value) {
         tracing::trace!("method: {:?}", json["method"]);
-        connection
+        client
+            .get_connection_mut()
             .send(&serde_json::json!({
                 "method": "test",
                 "some": "ラウトは難しいです！",
@@ -64,11 +65,13 @@ mod test {
 
 /// Ping pong
 mod ping {
+    use crate::client::*;
     use crate::connection::*;
     use chrono;
 
-    pub async fn handle(connection: &mut Connection, json: &serde_json::Value) {
-        connection
+    pub async fn handle(client: &mut Client, json: &serde_json::Value) {
+        client
+            .get_connection_mut()
             .send(&serde_json::json!({
                 "method": "pong",
                 "timestamp": chrono::offset::Local::now().to_string(),
@@ -82,24 +85,33 @@ mod enter {
     use crate::client::*;
     use crate::connection::*;
     use crate::room::*;
-    use tokio::sync::MutexGuard;
 
-    pub async fn handle(connection: &mut Connection, room: &mut Room, json: &serde_json::Value) {
+    pub async fn handle(client: &mut Client, json: &serde_json::Value) {
         let username = json["username"].clone().to_string();
         let password = json["password"].clone().to_string();
 
-        if room.enter(username, password) {
-            //room.add_client(connection);
+        let entered: bool;
+        {
+            let room = client.get_room().lock().await;
+            entered = room.enter(username, password);
 
-            //connection.entered = true;
-            connection
+            if entered {
+                //room.add_client(client);
+            }
+        }
+
+        if entered {
+            client.entered = true;
+            client
+                .get_connection_mut()
                 .send(&serde_json::json!({
                     "method": "enter",
                     "message": "Successully entered the room",
                 }))
                 .await;
         } else {
-            connection
+            client
+                .get_connection_mut()
                 .send(&serde_json::json!({
                     "method": "enter",
                     "message": "Incorrect password",
