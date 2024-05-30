@@ -56,11 +56,13 @@ impl Server {
             tracing::info!("New connection from {}", conn.to_string());
 
             // Clone a handle to the `Shared` state for the new connection.
-            let state = Arc::clone(&self.room);
+            let room = Arc::clone(&self.room);
 
             tokio::spawn(async move {
-                conn.run(state).await;
+                //run(&mut conn, state).await;
+                conn.run(room.clone()).await;
             });
         }
     }
 }
+

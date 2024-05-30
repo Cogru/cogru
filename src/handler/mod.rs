@@ -37,7 +37,7 @@ pub async fn handle(connection: &mut Connection, room: &Arc<Mutex<Room>>, json: 
             ping::handle(connection, &val).await;
         }
         "enter" => {
-            enter::handle(connection, &val).await;
+            enter::handle(connection, &mut room, &val).await;
         }
         "exit" => {
             // TODO: ..
@@ -79,14 +79,32 @@ mod ping {
 
 /// Enter session
 mod enter {
+    use crate::client::*;
     use crate::connection::*;
+    use crate::room::*;
+    use tokio::sync::MutexGuard;
 
-    pub async fn handle(connection: &mut Connection, json: &serde_json::Value) {
-        connection.entered = true;
-        connection
-            .send(&serde_json::json!({
-                "method": "enter_success",
-            }))
-            .await;
+    pub async fn handle(connection: &mut Connection, room: &mut Room, json: &serde_json::Value) {
+        let username = json["username"].clone().to_string();
+        let password = json["password"].clone().to_string();
+
+        if room.enter(username, password) {
+            //room.add_client(connection);
+
+            //connection.entered = true;
+            connection
+                .send(&serde_json::json!({
+                    "method": "enter",
+                    "message": "Successully entered the room",
+                }))
+                .await;
+        } else {
+            connection
+                .send(&serde_json::json!({
+                    "method": "enter",
+                    "message": "Incorrect password",
+                }))
+                .await;
+        }
     }
 }

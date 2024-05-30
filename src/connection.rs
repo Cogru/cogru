@@ -31,7 +31,6 @@ pub struct Connection {
     pub addr: SocketAddr,
     read_buf: [u8; BUF_SIZE],
     data: Vec<u8>,
-    pub entered: bool,
 }
 
 impl Connection {
@@ -41,7 +40,6 @@ impl Connection {
             addr: _addr,
             read_buf: [0; BUF_SIZE],
             data: Vec::new(),
-            entered: false,
         }
     }
 
@@ -68,7 +66,7 @@ impl Connection {
     }
 
     /// Raw data receiver.
-    pub async fn read(&mut self, room: Arc<Mutex<Room>>) {
+    async fn read(&mut self, room: Arc<Mutex<Room>>) {
         let _ = match self.stream.read(&mut self.read_buf).await {
             // socket closed
             Ok(n) if n == 0 => return,

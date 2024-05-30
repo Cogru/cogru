@@ -35,8 +35,26 @@ impl Room {
     }
 
     /// Return true when room has password
-    pub fn has_password(&self) -> bool {
+    fn has_password(&self) -> bool {
         self.password != None
+    }
+
+    /// Enter the room.
+    ///
+    /// # Arguments
+    ///
+    /// * `username` - The identifier in the room.
+    /// * `password` - Check if the password is correct.
+    pub fn enter(&self, username: String, password: String) -> bool {
+        if !self.has_password() {
+            return true;
+        }
+
+        return self.password.clone().unwrap() == password;
+    }
+
+    pub fn add_client(&mut self, connection: &mut Connection) {
+        //self.connections.push(connection);
     }
 
     ///  Send data to all clients in this room.
