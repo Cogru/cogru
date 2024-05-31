@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::channel::*;
 use crate::client::*;
 use crate::connection::*;
 use crate::room::*;
@@ -60,8 +61,8 @@ impl Server {
             let room = Arc::clone(&self.room);
 
             tokio::spawn(async move {
-                let mut client = Client::new(conn, room.clone());
-                client.run().await;
+                let mut channel = Channel::new(conn, room);
+                channel.run().await;
             });
         }
     }

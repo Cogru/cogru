@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::channel::*;
 use crate::client::*;
 use crate::connection::*;
 use crate::room::*;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-pub async fn handle(client: &mut Client, json: &str) {
+pub async fn handle(channel: &mut Channel, json: &str) {
     let v = serde_json::from_str(json);
     let val: serde_json::Value = v.unwrap();
 
@@ -30,13 +31,13 @@ pub async fn handle(client: &mut Client, json: &str) {
 
     match method {
         "test" => {
-            test::handle(client, &val).await;
+            test::handle(channel, &val).await;
         }
         "ping" => {
-            ping::handle(client, &val).await;
+            ping::handle(channel, &val).await;
         }
         "enter" => {
-            enter::handle(client, &val).await;
+            enter::handle(channel, &val).await;
         }
         "exit" => {
             // TODO: ..
@@ -48,10 +49,11 @@ pub async fn handle(client: &mut Client, json: &str) {
 }
 
 mod test {
+    use crate::channel::*;
     use crate::client::*;
     use crate::connection::*;
 
-    pub async fn handle(client: &mut Client, json: &serde_json::Value) {
+    pub async fn handle(channel: &mut Channel, json: &serde_json::Value) {
         tracing::trace!("method: {:?}", json["method"]);
         client
             .get_connection_mut()
@@ -65,11 +67,12 @@ mod test {
 
 /// Ping pong
 mod ping {
+    use crate::channel::*;
     use crate::client::*;
     use crate::connection::*;
     use chrono;
 
-    pub async fn handle(client: &mut Client, json: &serde_json::Value) {
+    pub async fn handle(channel: &mut Channel, json: &serde_json::Value) {
         client
             .get_connection_mut()
             .send(&serde_json::json!({
@@ -82,22 +85,23 @@ mod ping {
 
 /// Enter session
 mod enter {
+    use crate::channel::*;
     use crate::client::*;
     use crate::connection::*;
     use crate::room::*;
 
-    pub async fn handle(client: &mut Client, json: &serde_json::Value) {
+    pub async fn handle(channel: &mut Channel, json: &serde_json::Value) {
         let username = json["username"].clone().to_string();
         let password = json["password"].clone().to_string();
 
-        let entered: bool;
+        let entered: bool = false;
         {
-            let room = client.get_room().lock().await;
-            entered = room.enter(username, password);
-
-            if entered {
-                //room.add_client(client);
-            }
+            // let room = client.get_room().lock().await;
+            // entered = room.enter(username, password);
+            //
+            // if entered {
+            //     room.add_client(client);
+            // }
         }
 
         if entered {

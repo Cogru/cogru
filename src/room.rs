@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::connection::*;
 use crate::client::*;
+use crate::connection::*;
 use crate::file::*;
 use serde_json::Value;
+use std::collections::HashMap;
+use std::net::SocketAddr;
 
 pub struct Room {
-    password: Option<String>,     // room password
-    path: String,                 // workspace path
-    files: Vec<File>,             // files are being visited
-    clients: Vec<Client>, // Connections in this room
+    password: Option<String>,             // room password
+    path: String,                         // workspace path
+    files: Vec<File>,                     // files are being visited
+    clients: HashMap<SocketAddr, Client>, // Connections in this room
 }
 
 impl Room {
@@ -31,7 +33,7 @@ impl Room {
             path: _path.to_string(),
             password: _password,
             files: Vec::new(),
-            clients: Vec::new(),
+            clients: HashMap::new(),
         }
     }
 
@@ -54,14 +56,14 @@ impl Room {
         return self.password.clone().unwrap() == password;
     }
 
-    pub fn add_client(&mut self, client:&mut Client) {
-        //self.clients.push(client);
+    pub fn add_client(&mut self, addr: SocketAddr, client: Client) {
+        self.clients.insert(addr, client);
     }
 
     ///  Send data to all clients in this room.
     pub async fn broadcast(&mut self, params: &Value) {
-        for conn in self.clients.iter_mut() {
-            conn.get_connection_mut().send(params).await;
-        }
+        // for conn in self.clients.iter_mut() {
+        //     conn.get_connection_mut().send(params).await;
+        // }
     }
 }
