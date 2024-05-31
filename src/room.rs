@@ -60,6 +60,14 @@ impl Room {
         self.clients.insert(addr, client);
     }
 
+    pub fn get_client(&self, addr: &SocketAddr) -> Option<&Client> {
+        self.clients.get(addr)
+    }
+
+    pub fn get_client_mut(&mut self, addr: &SocketAddr) -> Option<&mut Client> {
+        self.clients.get_mut(addr)
+    }
+
     ///  Send data to all clients in this room.
     pub async fn broadcast(&mut self, params: &Value) {
         // for conn in self.clients.iter_mut() {

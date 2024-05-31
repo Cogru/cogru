@@ -55,15 +55,23 @@ impl Server {
         loop {
             let (stream, addr) = listener.accept().await?;
             let conn = Connection::new(stream, addr);
-            tracing::info!("New connection from {}", conn.to_string());
+            tracing::info!("New connection from {}", addr);
 
             // Clone a handle to the `Shared` state for the new connection.
             let room = Arc::clone(&self.room);
 
             tokio::spawn(async move {
-                let mut channel = Channel::new(conn, room);
-                channel.run().await;
+                let mut channel = Channel::new(addr);
+                add_client(conn, &room).await;
+                channel.run(&room).await;
             });
         }
     }
+}
+
+async fn add_client(conn: Connection, room: &Arc<Mutex<Room>>) {
+    let mut client = Client::new(conn);
+
+    let mut room = room.lock().await;
+    room.add_client(client.get_connection().addr, client);
 }

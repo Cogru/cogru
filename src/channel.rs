@@ -1,4 +1,3 @@
-use crate::client::*;
 /**
  * Copyright (c) 2024 Cogru Inc.
  *
@@ -14,10 +13,12 @@ use crate::client::*;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::client::*;
 use crate::connection::*;
 use crate::handler;
 use crate::room::*;
 use async_recursion::async_recursion;
+use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -29,45 +30,36 @@ const BUF_SIZE: usize = 1024 * 1;
 pub struct Channel {
     read_buf: [u8; BUF_SIZE],
     data: Vec<u8>,
-    connection: Connection,
-    room: Arc<Mutex<Room>>,
+    pub addr: SocketAddr,
 }
 
 impl Channel {
-    pub fn new(_connection: Connection, _room: Arc<Mutex<Room>>) -> Self {
+    pub fn new(_addr: SocketAddr) -> Self {
         Self {
             read_buf: [0; BUF_SIZE],
             data: Vec::new(),
-            connection: _connection,
-            room: _room,
+            addr: _addr,
         }
     }
 
-    async fn new_client(&self) {
-        let client = Client::new();
-
-        let mut room = self.room.lock().await;
-        room.add_client(self.connection.addr, client);
-    }
-
     /// Logic loop.
-    pub async fn run(&mut self) {
-        // Add new connection to the room.
-        self.new_client().await;
-
+    pub async fn run(&mut self, room: &Arc<Mutex<Room>>) {
         // Start receiving messages.
         loop {
-            self.read().await;
+            self.read(room).await;
         }
     }
 
     /// Message portal
-    async fn read(&mut self) {
-        let _ = match self.connection.stream.read(&mut self.read_buf).await {
+    async fn read(&mut self, room: &Arc<Mutex<Room>>) {
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(&self.addr).unwrap();
+
+        let _ = match client.get_stream().read(&mut self.read_buf).await {
             // socket closed
             Ok(n) if n == 0 => return,
             Ok(n) => {
-                tracing::trace!("{} ({:?})", self.connection.to_string(), n);
+                tracing::trace!("{} ({:?})", self.addr, n);
 
                 // Add new data to the end of data buffer.
                 {
@@ -75,7 +67,7 @@ impl Channel {
                     self.data.append(&mut new_data.to_vec());
                 }
 
-                self.process().await;
+                self.process(&mut room).await;
 
                 n
             }
@@ -88,7 +80,7 @@ impl Channel {
 
     /// Process through the request if available.
     #[async_recursion]
-    async fn process(&mut self) {
+    async fn process(&mut self, room: &mut Room) {
         let data = &self.data.clone();
         let decrypted = String::from_utf8_lossy(data);
 
@@ -120,7 +112,7 @@ impl Channel {
                         boundary += content_len;
 
                         let data = &line[..content_len];
-                        handler::handle(self, data).await;
+                        handler::handle(self, room, data).await;
                         //println!("{}: {}", "receive all", data);
 
                         process = true;
@@ -141,7 +133,7 @@ impl Channel {
                 boundary,
                 String::from_utf8_lossy(&self.data)
             );
-            self.process().await;
+            self.process(room).await;
         }
     }
 }
