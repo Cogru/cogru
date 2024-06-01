@@ -56,22 +56,53 @@ impl Room {
         return self.password.clone().unwrap() == password;
     }
 
+    /// Add a client to room.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Socket address as key.
+    /// * `client` - Target client.
     pub fn add_client(&mut self, addr: SocketAddr, client: Client) {
         self.clients.insert(addr, client);
     }
 
+    /// Return the client as immutable.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Key socket address.
     pub fn get_client(&self, addr: &SocketAddr) -> Option<&Client> {
         self.clients.get(addr)
     }
 
+    /// Return the client as mutable.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Key socket address.
     pub fn get_client_mut(&mut self, addr: &SocketAddr) -> Option<&mut Client> {
         self.clients.get_mut(addr)
     }
 
     ///  Send data to all clients in this room.
     pub async fn broadcast(&mut self, params: &Value) {
-        // for conn in self.clients.iter_mut() {
-        //     conn.get_connection_mut().send(params).await;
-        // }
+        for (addr, client) in self.clients.iter_mut() {
+            client.get_connection().send(params).await;
+        }
+    }
+
+    /// Broadcast params except addr.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - The addr we do not want to send to.
+    /// * `params` - data to send.
+    pub async fn broadcast_excl(&mut self, addr: SocketAddr, params: &Value) {
+        for (addr, client) in self.clients.iter_mut() {
+            if addr == addr {
+                continue;
+            }
+            client.get_connection().send(params).await;
+        }
     }
 }

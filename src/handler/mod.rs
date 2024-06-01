@@ -68,6 +68,12 @@ mod test {
                 "some": "ラウトは難しいです！",
             }))
             .await;
+
+        room.broadcast(&serde_json::json!({
+            "method": "test_broadcast",
+            "message": "This is the broadcast test!",
+        }))
+        .await;
     }
 }
 
