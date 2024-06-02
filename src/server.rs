@@ -67,16 +67,16 @@ impl Server {
 
             tokio::spawn(async move {
                 let mut channel = Channel::new(conn, tx);
-                //add_client(conn, &room).await;
+                add_client(&mut channel, &room).await;
                 channel.run(&room).await;
             });
         }
     }
 }
 
-async fn add_client(conn: Connection, room: &Arc<Mutex<Room>>) {
-    let mut client = Client::new(conn);
+async fn add_client(channel: &mut Channel, room: &Arc<Mutex<Room>>) {
+    let client = Client::new();
 
     let mut room = room.lock().await;
-    room.add_client(client.get_connection().addr, client);
+    room.add_client(channel.get_connection().addr, client);
 }

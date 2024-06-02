@@ -83,26 +83,4 @@ impl Room {
     pub fn get_client_mut(&mut self, addr: &SocketAddr) -> Option<&mut Client> {
         self.clients.get_mut(addr)
     }
-
-    ///  Send data to all clients in this room.
-    pub async fn broadcast(&mut self, params: &Value) {
-        for (addr, client) in self.clients.iter_mut() {
-            client.get_connection().send_json(params).await;
-        }
-    }
-
-    /// Broadcast params except addr.
-    ///
-    /// # Arguments
-    ///
-    /// * `addr` - The addr we do not want to send to.
-    /// * `params` - data to send.
-    pub async fn broadcast_excl(&mut self, addr: SocketAddr, params: &Value) {
-        for (addr, client) in self.clients.iter_mut() {
-            if addr == addr {
-                continue;
-            }
-            client.get_connection().send_json(params).await;
-        }
-    }
 }

@@ -22,23 +22,13 @@ use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 
 pub struct Client {
-    connection: Connection,
     pub entered: bool,
 }
 
 impl Client {
-    pub fn new(_connection: Connection) -> Self {
+    pub fn new() -> Self {
         Self {
-            connection: _connection,
             entered: false,
         }
-    }
-
-    pub fn get_connection(&mut self) -> &mut Connection {
-        &mut self.connection
-    }
-
-    pub fn get_stream(&mut self) -> &mut TcpStream {
-        &mut self.connection.stream
     }
 }
