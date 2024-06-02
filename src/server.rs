@@ -19,6 +19,7 @@ use crate::connection::*;
 use crate::room::*;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use tokio::sync::broadcast;
 use tokio::sync::Mutex;
 
 pub struct Server {
@@ -51,6 +52,8 @@ impl Server {
 
         let listener = TcpListener::bind(self.addr()).await?;
 
+        let (tx, _) = broadcast::channel::<String>(32);
+
         // TODO: Add error handling.
         loop {
             let (stream, addr) = listener.accept().await?;
@@ -58,11 +61,13 @@ impl Server {
             tracing::info!("New connection from {}", addr);
 
             // Clone a handle to the `Shared` state for the new connection.
-            let room = Arc::clone(&self.room);
+            let room = self.room.clone();
+
+            let tx = tx.clone();
 
             tokio::spawn(async move {
-                let mut channel = Channel::new(addr);
-                add_client(conn, &room).await;
+                let mut channel = Channel::new(conn, tx);
+                //add_client(conn, &room).await;
                 channel.run(&room).await;
             });
         }

@@ -18,10 +18,12 @@ use crate::connection::*;
 use crate::handler;
 use crate::room::*;
 use async_recursion::async_recursion;
+use serde_json::Value;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tokio::sync::broadcast::Sender;
 use tokio::sync::Mutex;
 
 const SEPARATOR_LEN: usize = "\r\n".len();
@@ -30,57 +32,74 @@ const BUF_SIZE: usize = 1024 * 1;
 pub struct Channel {
     read_buf: [u8; BUF_SIZE],
     data: Vec<u8>,
-    pub addr: SocketAddr,
+    tx: Sender<String>,
+    connection: Connection,
 }
 
 impl Channel {
-    pub fn new(_addr: SocketAddr) -> Self {
+    pub fn new(_connection: Connection, _tx: Sender<String>) -> Self {
         Self {
             read_buf: [0; BUF_SIZE],
             data: Vec::new(),
-            addr: _addr,
+            tx: _tx,
+            connection: _connection,
         }
+    }
+
+    /// Send JSON data to all clients.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - [description]
+    pub fn broadcast_json(&self, params: &Value) {
+        let _ = self.tx.send(params.to_string());
     }
 
     /// Logic loop.
     pub async fn run(&mut self, room: &Arc<Mutex<Room>>) {
+        //let mut room = room.lock().await;
+        //let client = room.get_client_mut(&self.addr).unwrap();
+
+        let mut rx = self.tx.subscribe();
+
         // Start receiving messages.
         loop {
-            self.read(room).await;
-        }
-    }
+            tokio::select! {
+                result = self.connection.stream.read(&mut self.read_buf) => {
+                    let n = match result {
+                        Err(e) => {
+                            tracing::error!("Reading data: {}", e);
+                            return;
+                        }
+                        Ok(n) if n == 0 => {
+                            return;
+                        }
+                        Ok(n) => n,
+                    };
 
-    /// Message portal
-    async fn read(&mut self, room: &Arc<Mutex<Room>>) {
-        let mut room = room.lock().await;
-        let client = room.get_client_mut(&self.addr).unwrap();
+                    tracing::trace!("{} ({:?})", self.connection.addr, n);
 
-        let _ = match client.get_stream().read(&mut self.read_buf).await {
-            // socket closed
-            Ok(n) if n == 0 => return,
-            Ok(n) => {
-                tracing::trace!("{} ({:?})", self.addr, n);
+                    // Add new data to the end of data buffer.
+                    {
+                        let new_data = &self.read_buf[0..n];
+                        self.data.append(&mut new_data.to_vec());
+                    }
 
-                // Add new data to the end of data buffer.
-                {
-                    let new_data = &self.read_buf[0..n];
-                    self.data.append(&mut new_data.to_vec());
+                    self.process(room).await;
                 }
-
-                self.process(&mut room).await;
-
-                n
+                msg = rx.recv() => {
+                    if let Ok(data) = msg {
+                        //stream.write(data.as_bytes()).await.unwrap();
+                        self.connection.send_json_str(&data).await;
+                    }
+                }
             }
-            Err(e) => {
-                println!("Failed to read from socket; err = {:?}", e);
-                return;
-            }
-        };
+        }
     }
 
     /// Process through the request if available.
     #[async_recursion]
-    async fn process(&mut self, room: &mut Room) {
+    async fn process(&mut self, room: &Arc<Mutex<Room>>) {
         let data = &self.data.clone();
         let decrypted = String::from_utf8_lossy(data);
 
@@ -135,6 +154,14 @@ impl Channel {
             );
             self.process(room).await;
         }
+    }
+
+    pub fn get_connection(&mut self) -> &mut Connection {
+        &mut self.connection
+    }
+
+    pub fn get_stream(&mut self) -> &mut TcpStream {
+        &mut self.connection.stream
     }
 }
 

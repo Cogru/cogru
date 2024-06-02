@@ -51,16 +51,25 @@ impl Connection {
         }
     }
 
+    /// Send the JSON string.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - JSON object.
+    pub async fn send_json_str(&mut self, json_str: &String) {
+        let data_str = format!("Content-Length: {}\r\n\r\n{}", json_str.len(), json_str);
+        let data = data_str.as_bytes();
+        self.write(&data).await;
+    }
+
     /// Send the CSP JSON request.
     ///
     /// # Arguments
     ///
     /// * `params` - JSON object.
-    pub async fn send(&mut self, params: &Value) {
+    pub async fn send_json(&mut self, params: &Value) {
         let json_str = params.to_string();
-        let data_str = format!("Content-Length: {}\r\n\r\n{}", json_str.len(), json_str);
-        let data = data_str.as_bytes();
-        self.write(&data).await;
+        self.send_json_str(&json_str).await;
     }
 
     /// Return the connection string.

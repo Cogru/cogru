@@ -87,7 +87,7 @@ impl Room {
     ///  Send data to all clients in this room.
     pub async fn broadcast(&mut self, params: &Value) {
         for (addr, client) in self.clients.iter_mut() {
-            client.get_connection().send(params).await;
+            client.get_connection().send_json(params).await;
         }
     }
 
@@ -102,7 +102,7 @@ impl Room {
             if addr == addr {
                 continue;
             }
-            client.get_connection().send(params).await;
+            client.get_connection().send_json(params).await;
         }
     }
 }
