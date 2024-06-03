@@ -49,11 +49,17 @@ impl Room {
     /// * `username` - The identifier in the room.
     fn username_taken(&self, addr: &SocketAddr, username: &String) -> bool {
         for (_addr, _client) in self.clients.iter() {
+            // ignore ourselves
             if addr == _addr {
                 continue;
             }
 
-            if _client.username.clone().unwrap() == *username {
+            // ignore client that haven't entered the room
+            if !_client.entered() {
+                continue;
+            }
+
+            if _client.username().unwrap() == *username {
                 return true;
             }
         }
@@ -66,26 +72,31 @@ impl Room {
     ///
     /// * `username` - The identifier in the room.
     /// * `password` - Check if the password is correct.
-    pub fn enter(&self, addr: &SocketAddr, username: &String, password: &Option<String>) -> bool {
+    pub fn enter(
+        &self,
+        addr: &SocketAddr,
+        username: &String,
+        password: &Option<String>,
+    ) -> (bool, &str) {
         if self.username_taken(addr, username) {
-            return false;
+            return (false, "Username already taken");
         }
 
         if !self.has_password() {
-            return true;
+            return (true, "");
         }
 
         if password.is_none() {
-            return false;
+            return (false, "Password cannot be null");
         }
 
         let password = password.as_ref().unwrap();
 
         if self.password.clone().unwrap() != *password {
-            return false;
+            return (false, "Incorrect password");
         }
 
-        return true;
+        return (true, "");
     }
 
     /// Add a client to room.

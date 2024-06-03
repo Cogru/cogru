@@ -64,7 +64,6 @@ mod test {
         //let client = room.get_client_mut(&channel.addr).unwrap();
 
         channel
-            .get_connection()
             .send_json(&serde_json::json!({
                 "method": "test",
                 "some": "ラウトは難しいです！",
@@ -89,7 +88,6 @@ mod ping {
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         channel
-            .get_connection()
             .send_json(&serde_json::json!({
                 "method": "pong",
                 "timestamp": chrono::offset::Local::now().to_string(),
@@ -107,6 +105,21 @@ mod enter {
     use tokio::sync::Mutex;
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if client.entered() {
+            channel
+                .send_json(&serde_json::json!({
+                    "method": "enter",
+                    "message": "You have already entered the room",
+                    "status": "failure",
+                }))
+                .await;
+            return;
+        }
+
         let username = json["username"].to_string();
         let password = if json["password"].is_null() {
             None
@@ -114,33 +127,28 @@ mod enter {
             Some(json["password"].to_string())
         };
 
-        let addr = &channel.get_connection().addr;
-
-        let mut room = room.lock().await;
-        let entered = room.enter(addr, &username, &password);
+        let (entered, message) = room.enter(addr, &username, &password);
 
         if entered {
             // Update client info!
             {
                 let client = room.get_client_mut(addr).unwrap();
-                client.username = Some(username);
-                client.entered = true;
+                client.enter_room(Some(username.clone()));
             }
 
             channel
-                .get_connection()
                 .send_json(&serde_json::json!({
                     "method": "enter",
-                    "message": "Successully entered the room",
+                    "message": "You have successully entered the room",
+                    "username": username,
                     "status": "success",
                 }))
                 .await;
         } else {
             channel
-                .get_connection()
                 .send_json(&serde_json::json!({
                     "method": "enter",
-                    "message": "Incorrect password",
+                    "message": message,
                     "status": "failure",
                 }))
                 .await;
@@ -157,6 +165,30 @@ mod exit {
     use tokio::sync::Mutex;
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        // TODO: ..
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if !client.entered() {
+            channel
+                .send_json(&serde_json::json!({
+                    "method": "exit",
+                    "message": "You never entered the room; do nothing",
+                    "status": "failure",
+                }))
+                .await;
+            return;
+        }
+
+        // Leave the room
+        client.exit_room();
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": "exit",
+                "message": "You have successfully left the room",
+                "status": "success",
+            }))
+            .await;
     }
 }

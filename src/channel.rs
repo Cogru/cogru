@@ -46,15 +46,6 @@ impl Channel {
         }
     }
 
-    /// Send JSON data to all clients.
-    ///
-    /// # Arguments
-    ///
-    /// * `params` - [description]
-    pub fn broadcast_json(&self, params: &Value) {
-        let _ = self.tx.send(params.to_string());
-    }
-
     /// Logic loop.
     pub async fn run(&mut self, room: &Arc<Mutex<Room>>) {
         //let mut room = room.lock().await;
@@ -162,6 +153,25 @@ impl Channel {
 
     pub fn get_stream(&mut self) -> &mut TcpStream {
         &mut self.connection.stream
+    }
+
+    /// Wrapper for function Connection::send_json_str
+    pub async fn send_json_str(&mut self, json_str: &String) {
+        self.get_connection().send_json_str(json_str).await;
+    }
+
+    /// Wrapper for function Connection::send_json
+    pub async fn send_json(&mut self, params: &Value) {
+        self.get_connection().send_json(params).await;
+    }
+
+    /// Send JSON data to all clients.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - [description]
+    pub fn broadcast_json(&self, params: &Value) {
+        let _ = self.tx.send(params.to_string());
     }
 }
 

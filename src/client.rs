@@ -18,8 +18,8 @@ use crate::handler;
 use crate::room::*;
 
 pub struct Client {
-    pub username: Option<String>,
-    pub entered: bool,
+    username: Option<String>,
+    entered: bool,
 }
 
 impl Client {
@@ -28,5 +28,23 @@ impl Client {
             username: None,
             entered: false,
         }
+    }
+
+    pub fn username(&self) -> Option<String> {
+        self.username.clone()
+    }
+
+    pub fn entered(&self) -> bool {
+        self.entered
+    }
+
+    pub fn enter_room(&mut self, username: Option<String>) {
+        self.username = username;
+        self.entered = true;
+    }
+
+    pub fn exit_room(&mut self) {
+        self.username = None;
+        self.entered = false;
     }
 }
