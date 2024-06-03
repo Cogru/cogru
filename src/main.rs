@@ -130,7 +130,7 @@ async fn main() {
     let no_password = matches.get_flag("no_password");
 
     let password = if no_password {
-        Some(String::from(""))
+        None
     } else {
         Some(get_password().expect("Confirm password doesn't match"))
     };

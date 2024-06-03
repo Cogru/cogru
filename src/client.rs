@@ -16,18 +16,16 @@
 use crate::connection::*;
 use crate::handler;
 use crate::room::*;
-use std::sync::Arc;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::TcpStream;
-use tokio::sync::Mutex;
 
 pub struct Client {
+    pub username: Option<String>,
     pub entered: bool,
 }
 
 impl Client {
     pub fn new() -> Self {
         Self {
+            username: None,
             entered: false,
         }
     }
