@@ -19,6 +19,13 @@ to be entered.
 $ cogru . --no-password
 ```
 
+## 📁 Similar Projects
+
+- [floobits](https://floobits.com/) (abandoned)
+- [tandem](https://github.com/typeintandem/tandem)
+- [duckly](https://duckly.com/) (malware?)
+
+
 ## ⚜️ License
 
 Copyright 2024-present Cogru Inc.
