@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 use crate::channel::*;
-use crate::client::*;
-use crate::connection::*;
 use crate::room::*;
 use serde_json::Value;
 use std::sync::Arc;
@@ -24,11 +22,7 @@ use tokio::sync::Mutex;
 pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) {
     let v = serde_json::from_str(json);
     let val: Value = v.unwrap();
-
-    println!("{}: {}", "method", val["method"]);
-
     let method: &str = val["method"].as_str().unwrap();
-    println!("{}: {:?}", "val", val["method"]);
 
     match method {
         "test" => {
@@ -51,13 +45,12 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
 
 mod test {
     use crate::channel::*;
-    use crate::connection::*;
     use crate::room::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+    pub async fn handle(channel: &mut Channel, _room: &Arc<Mutex<Room>>, json: &Value) {
         tracing::trace!("method: {:?}", json["method"]);
 
         //let mut room = room.lock().await;
@@ -86,7 +79,7 @@ mod ping {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+    pub async fn handle(channel: &mut Channel, _room: &Arc<Mutex<Room>>, _json: &Value) {
         channel
             .send_json(&serde_json::json!({
                 "method": "pong",
@@ -164,7 +157,7 @@ mod exit {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, _json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
         let client = room.get_client_mut(addr).unwrap();
