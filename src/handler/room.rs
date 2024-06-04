@@ -22,6 +22,8 @@ pub mod enter {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
+    const METHOD: &str = "room::enter";
+
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
@@ -30,7 +32,7 @@ pub mod enter {
         if client.entered() {
             channel
                 .send_json(&serde_json::json!({
-                    "method": "enter",
+                    "method": METHOD,
                     "message": "You have already entered the room",
                     "status": "failure",
                 }))
@@ -54,18 +56,16 @@ pub mod enter {
                 client.enter_room(Some(username.clone()));
             }
 
-            channel
-                .send_json(&serde_json::json!({
-                    "method": "enter",
-                    "message": "You have successully entered the room",
-                    "username": username,
-                    "status": "success",
-                }))
-                .await;
+            channel.broadcast_json(&serde_json::json!({
+                "method": METHOD,
+                "message": format!("{} has entered the room", username),
+                "username": username,
+                "status": "success",
+            }));
         } else {
             channel
                 .send_json(&serde_json::json!({
-                    "method": "enter",
+                    "method": METHOD,
                     "message": message,
                     "status": "failure",
                 }))
@@ -82,6 +82,8 @@ pub mod exit {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
+    const METHOD: &str = "room::exit";
+
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, _json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
@@ -90,7 +92,7 @@ pub mod exit {
         if !client.entered() {
             channel
                 .send_json(&serde_json::json!({
-                    "method": "exit",
+                    "method": METHOD,
                     "message": "You never entered the room; do nothing",
                     "status": "failure",
                 }))
@@ -101,13 +103,14 @@ pub mod exit {
         // Leave the room
         client.exit_room();
 
-        channel
-            .send_json(&serde_json::json!({
-                "method": "exit",
-                "message": "You have successfully left the room",
-                "status": "success",
-            }))
-            .await;
+        let username = client.username().unwrap();
+
+        channel.broadcast_json(&serde_json::json!({
+            "method": METHOD,
+            "message": format!("{} has left the room", username),
+            "username": username,
+            "status": "success",
+        }));
     }
 }
 
@@ -121,6 +124,8 @@ pub mod broadcast {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
+    const METHOD: &str = "room::broadcast";
+
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
@@ -129,7 +134,7 @@ pub mod broadcast {
         if !client.entered() {
             channel
                 .send_json(&serde_json::json!({
-                    "method": "broadcast",
+                    "method": METHOD,
                     "message": "You haven't entered the room yet",
                     "status": "failure",
                 }))
@@ -140,10 +145,25 @@ pub mod broadcast {
         let message = json["message"].as_str().unwrap().to_string();
 
         channel.broadcast_json(&serde_json::json!({
-            "method": "broadcast",
+            "method": METHOD,
             "username: ": client.username().unwrap(),
             "message": message,
             "status": "success",
         }));
+    }
+}
+
+/// Room Users
+///
+/// Return a list of users in room.
+pub mod users {
+    use crate::channel::*;
+    use crate::room::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        // TODO: ..
     }
 }

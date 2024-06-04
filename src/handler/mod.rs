@@ -30,9 +30,10 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
     match method {
         "test" => test::handle(channel, room, &val).await,
         "ping" => ping::handle(channel, room, &val).await,
-        "enter" => enter::handle(channel, room, &val).await,
-        "exit" => exit::handle(channel, room, &val).await,
-        "broadcast" => broadcast::handle(channel, room, &val).await,
+        "room::enter" => room::enter::handle(channel, room, &val).await,
+        "room::exit" => room::exit::handle(channel, room, &val).await,
+        "room::broadcast" => room::broadcast::handle(channel, room, &val).await,
+        "room::users" => room::users::handle(channel, room, &val).await,
         _ => {
             tracing::error!("Unkown method request: {:?}", method);
         }
@@ -47,6 +48,8 @@ mod test {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
+    const METHOD: &str = "test";
+
     pub async fn handle(channel: &mut Channel, _room: &Arc<Mutex<Room>>, json: &Value) {
         tracing::trace!("method: {:?}", json["method"]);
 
@@ -55,13 +58,13 @@ mod test {
 
         channel
             .send_json(&serde_json::json!({
-                "method": "test",
+                "method": METHOD,
                 "some": "ラウトは難しいです！",
             }))
             .await;
 
         channel.broadcast_json(&serde_json::json!({
-            "method": "test",
+            "method": METHOD,
             "message": "This is the broadcast test!",
         }));
     }
@@ -76,10 +79,12 @@ mod ping {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
+    const METHOD: &str = "pong";
+
     pub async fn handle(channel: &mut Channel, _room: &Arc<Mutex<Room>>, _json: &Value) {
         channel
             .send_json(&serde_json::json!({
-                "method": "pong",
+                "method": METHOD,
                 "timestamp": chrono::offset::Local::now().to_string(),
             }))
             .await;
