@@ -38,11 +38,11 @@ pub mod enter {
             return;
         }
 
-        let username = json["username"].to_string();
+        let username = json["username"].as_str().unwrap().to_string();
         let password = if json["password"].is_null() {
             None
         } else {
-            Some(json["password"].to_string())
+            Some(json["password"].as_str().unwrap().to_string())
         };
 
         let (entered, message) = room.enter(addr, &username, &password);
@@ -121,7 +121,32 @@ pub mod broadcast {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, _json: &Value) {
-        // TODO: ..
+    fn form_message(username: &String, message: &String) -> String {
+        format!("[{}]: {}", username, message)
+    }
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if !client.entered() {
+            channel
+                .send_json(&serde_json::json!({
+                    "method": "broadcast",
+                    "message": "You haven't entered the room yet",
+                    "status": "failure",
+                }))
+                .await;
+            return;
+        }
+
+        let message = json["message"].as_str().unwrap().to_string();
+
+        channel.broadcast_json(&serde_json::json!({
+            "method": "broadcast",
+            "message": form_message(&client.username().unwrap(), &message),
+            "status": "success",
+        }));
     }
 }
