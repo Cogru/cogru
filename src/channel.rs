@@ -48,9 +48,6 @@ impl Channel {
 
     /// Logic loop.
     pub async fn run(&mut self, room: &Arc<Mutex<Room>>) {
-        //let mut room = room.lock().await;
-        //let client = room.get_client_mut(&self.addr).unwrap();
-
         let mut rx = self.tx.subscribe();
 
         // Start receiving messages.
@@ -63,6 +60,7 @@ impl Channel {
                             return;
                         }
                         Ok(n) if n == 0 => {
+                            self.disconnect(room).await;
                             return;
                         }
                         Ok(n) => n,
@@ -145,6 +143,14 @@ impl Channel {
             );
             self.process(room).await;
         }
+    }
+
+    pub async fn disconnect(&self, room: &Arc<Mutex<Room>>) {
+        tracing::trace!("{} disconnected", self.connection.addr);
+
+        let mut room = room.lock().await;
+
+        room.remove_client(&self.connection.addr);
     }
 
     pub fn get_connection(&mut self) -> &mut Connection {

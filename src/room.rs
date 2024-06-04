@@ -126,4 +126,13 @@ impl Room {
     pub fn get_client_mut(&mut self, addr: &SocketAddr) -> Option<&mut Client> {
         self.clients.get_mut(addr)
     }
+
+    /// Remove a client by address.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Key socket address.
+    pub fn remove_client(&mut self, addr: &SocketAddr) {
+        self.clients.remove(addr);
+    }
 }
