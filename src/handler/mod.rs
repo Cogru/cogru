@@ -27,21 +27,16 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
     let val: Value = v.unwrap();
     let method: &str = val["method"].as_str().unwrap();
 
-    let function = match method {
-        "test" => Some(test::handle),
-        "ping" => Some(ping::handle),
-        "enter" => Some(enter::handle),
-        "exit" => Some(exit::handle),
-        "broadcast" => Some(broadcast::handle),
-        _ => None,
-    };
-
-    if function.is_none {
-        tracing::error!("Unkown method request: {:?}", method);
-        return;
+    match method {
+        "test" => test::handle(channel, room, &val).await,
+        "ping" => ping::handle(channel, room, &val).await,
+        "enter" => enter::handle(channel, room, &val).await,
+        "exit" => exit::handle(channel, room, &val).await,
+        "broadcast" => broadcast::handle(channel, room, &val).await,
+        _ => {
+            tracing::error!("Unkown method request: {:?}", method);
+        }
     }
-
-    function(channel, room, &val).await;
 }
 
 /// Test
