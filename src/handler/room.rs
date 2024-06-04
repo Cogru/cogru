@@ -111,7 +111,7 @@ pub mod exit {
     }
 }
 
-/// Room message
+/// Send a room message.
 ///
 /// This message goes across the project.
 pub mod broadcast {
@@ -145,7 +145,8 @@ pub mod broadcast {
 
         channel.broadcast_json(&serde_json::json!({
             "method": "broadcast",
-            "message": form_message(&client.username().unwrap(), &message),
+            "username: ": client.username().unwrap(),
+            "message": message,
             "status": "success",
         }));
     }
