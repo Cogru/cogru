@@ -121,10 +121,6 @@ pub mod broadcast {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    fn form_message(username: &String, message: &String) -> String {
-        format!("[{}]: {}", username, message)
-    }
-
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
