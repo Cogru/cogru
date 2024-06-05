@@ -64,7 +64,7 @@ impl Room {
 
     /// Return the custom ignore file path.
     fn ignore_file(&self) -> String {
-        let ignore = Path::new(&self.path).join("cogru.ignore");
+        let ignore = Path::new(&self.path).join(".cogruignore");
         String::from(ignore.to_str().unwrap())
     }
 
