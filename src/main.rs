@@ -35,11 +35,13 @@ use std::io;
 use std::io::Write;
 use tracing_subscriber::{fmt, layer::SubscriberExt};
 
+const DOT_COGRU: &str = "./.cogru";
+
 /// Setup logger rotator.
 ///
 /// https://docs.rs/tracing-appender/0.2.3/tracing_appender/non_blocking/struct.WorkerGuard.html
 pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
-    let file_appender = tracing_appender::rolling::hourly("./.cogru", "example.log");
+    let file_appender = tracing_appender::rolling::hourly(DOT_COGRU, "example.log");
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
     let subscriber = tracing_subscriber::registry()
