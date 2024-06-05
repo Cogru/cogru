@@ -112,7 +112,10 @@ mod init {
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let path = json["path"].as_str().unwrap().to_string();
 
-        let client = Client::new(path.clone());
+        // XXX: Every local client is the admin.
+        let is_admin = channel.is_local();
+
+        let client = Client::new(path.clone(), is_admin);
 
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;

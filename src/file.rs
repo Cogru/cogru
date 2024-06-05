@@ -47,7 +47,8 @@ impl File {
         }
     }
 
-    pub fn save() {
+    /// Write the content to file.
+    pub async fn save(&self) {
         // TODO: ..
     }
 }

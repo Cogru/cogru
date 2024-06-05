@@ -21,17 +21,25 @@ pub struct Client {
     username: Option<String>, // name of this client
     entered: bool,            // Is inside the room?
     path: String,             // workspace path
+    admin: bool,              // admin privileges
 }
 
 impl Client {
-    pub fn new(_path: String) -> Self {
+    pub fn new(_path: String, _admin: bool) -> Self {
         Self {
             username: None,
             entered: false,
             path: _path,
+            admin: _admin,
         }
     }
 
+    /// Return true if this client is an admin.
+    pub fn admin(&self) -> bool {
+        self.admin
+    }
+
+    /// Return the username of this client.
     pub fn username(&self) -> Option<String> {
         self.username.clone()
     }

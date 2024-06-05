@@ -37,30 +37,38 @@ pub struct Room {
 
 impl Room {
     pub fn new(_path: &str, _password: Option<String>) -> Self {
-        let room = Self {
+        let mut room = Self {
             path: _path.to_string(),
             password: _password,
             clients: HashMap::new(),
             files: Vec::new(),
             chat: Chat::new(),
         };
-        room.initialize();
+        room.sync_files();
         room
     }
 
-    fn initialize(&self) {
+    /// Sync files in the room
+    pub fn sync_files(&mut self) {
         let mut builder = WalkBuilder::new(&self.path);
         let ignore = self.ignore_file();
 
         builder.hidden(false); // make ignore files seeable
+
+        // add custom ignore file.
         builder.add_custom_ignore_filename(ignore);
+
         for result in builder.build() {
             let dent = result.unwrap();
             let path = dent.path();
             let md = metadata(path).unwrap();
 
             if md.is_file() {
-                println!("- {}", dent.path().display());
+                let path = dent.path().display().to_string();
+                println!("- {}", path);
+
+                let file = File::new(path);
+                self.files.push(file);
             }
         }
     }

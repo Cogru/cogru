@@ -46,6 +46,13 @@ impl Channel {
         }
     }
 
+    /// Return true when channel is local.
+    pub fn is_local(&self) -> bool {
+        let ip = self.connection.addr.ip();
+        println!("add: {:?}", ip.to_string());
+        ip.to_string() == "127.0.0.1"
+    }
+
     /// Logic loop.
     pub async fn run(&mut self, room: &Arc<Mutex<Room>>) {
         let mut rx = self.tx.subscribe();
