@@ -46,4 +46,8 @@ impl File {
             content: String::default(),
         }
     }
+
+    pub fn save() {
+        // TODO: ..
+    }
 }

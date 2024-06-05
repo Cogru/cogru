@@ -52,6 +52,7 @@ impl Room {
         let mut builder = WalkBuilder::new(&self.path);
         let ignore = self.ignore_file();
 
+        builder.hidden(false); // make ignore files seeable
         builder.add_custom_ignore_filename(ignore);
         for result in builder.build() {
             let dent = result.unwrap();
