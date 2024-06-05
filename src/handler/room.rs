@@ -216,3 +216,22 @@ pub mod list_users {
         // TODO: ..
     }
 }
+
+pub mod sync {
+    use crate::channel::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "room::sync";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        if !ensure_entered(channel, room, METHOD).await {
+            return;
+        }
+
+        // TODO: ..
+    }
+}

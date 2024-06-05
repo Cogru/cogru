@@ -13,28 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::chat::*;
 use crate::client::*;
 use crate::connection::*;
 use crate::file::*;
+use crate::file::*;
+use ignore::WalkBuilder;
 use serde_json::Value;
 use std::collections::HashMap;
+use std::fs::metadata;
 use std::net::SocketAddr;
+use std::path::Path;
 
 pub struct Room {
     password: Option<String>,             // room password
     path: String,                         // workspace path
     clients: HashMap<SocketAddr, Client>, // Connections in this room
     files: Vec<File>,                     // files are being visited
+    chat: Chat,                           // messages in this file
 }
 
 impl Room {
     pub fn new(_path: &str, _password: Option<String>) -> Self {
-        Self {
+        let room = Self {
             path: _path.to_string(),
             password: _password,
             clients: HashMap::new(),
             files: Vec::new(),
+            chat: Chat::new(),
+        };
+        room.initialize();
+        room
+    }
+
+    fn initialize(&self) {
+        let mut builder = WalkBuilder::new(&self.path);
+        let ignore = self.ignore_file();
+
+        builder.add_custom_ignore_filename(ignore);
+        for result in builder.build() {
+            let dent = result.unwrap();
+            let path = dent.path();
+            let md = metadata(path).unwrap();
+
+            if md.is_file() {
+                println!("- {}", dent.path().display());
+            }
         }
+    }
+
+    /// Return the custom ignore file path.
+    fn ignore_file(&self) -> String {
+        let ignore = Path::new(&self.path).join("cogru.ignore");
+        String::from(ignore.to_str().unwrap())
     }
 
     /// Return true when room has password

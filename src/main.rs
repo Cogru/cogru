@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 mod channel;
+mod chat;
 mod client;
 mod connection;
 mod file;

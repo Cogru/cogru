@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::client::*;
+use crate::chat::*;
 
 struct Region {
     start: u64,
@@ -30,26 +30,20 @@ struct User {
     region: Region,
 }
 
-struct Message {
-    username: String,
-    content: String,
-    timestamp: String,
+pub struct File {
+    path: String,     // absolute path
+    users: Vec<User>, // a list of users in the file
+    chat: Chat,       // messages in this file
+    content: String,  // the file content
 }
 
-impl Message {
-    pub fn new(client: &Client, _content: &str) -> Self {
+impl File {
+    pub fn new(_path: String) -> Self {
         Self {
-            // XXX: When create message, the username cannot be dangling.
-            username: client.username().unwrap(),
-            content: _content.to_string(),
-            timestamp: chrono::offset::Local::now().to_string(),
+            path: _path,
+            users: Vec::new(),
+            chat: Chat::new(),
+            content: String::default(),
         }
     }
-}
-
-pub struct File {
-    path: String,           // absolute path
-    users: Vec<User>,       // a list of users in the file
-    messages: Vec<Message>, // messages in this file
-    content: String,        // the file content
 }
