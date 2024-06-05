@@ -18,15 +18,17 @@ use crate::handler;
 use crate::room::*;
 
 pub struct Client {
-    username: Option<String>,
-    entered: bool,
+    username: Option<String>, // name of this client
+    entered: bool,            // Is inside the room?
+    path: String,             // workspace path
 }
 
 impl Client {
-    pub fn new() -> Self {
+    pub fn new(_path: String) -> Self {
         Self {
             username: None,
             entered: false,
+            path: _path,
         }
     }
 

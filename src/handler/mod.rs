@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pub mod file;
 pub mod room;
 
 use crate::channel::*;
+use crate::handler::file::*;
 use crate::handler::room::*;
 use crate::room::*;
 use serde_json::Value;
@@ -29,11 +31,15 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
 
     match method {
         "test" => test::handle(channel, room, &val).await,
+        "init" => init::handle(channel, room, &val).await,
         "ping" => ping::handle(channel, room, &val).await,
         "room::enter" => room::enter::handle(channel, room, &val).await,
         "room::exit" => room::exit::handle(channel, room, &val).await,
         "room::broadcast" => room::broadcast::handle(channel, room, &val).await,
-        "room::users" => room::users::handle(channel, room, &val).await,
+        "room::list_users" => room::list_users::handle(channel, room, &val).await,
+        "file::open" => file::open::handle(channel, room, &val).await,
+        "file::close" => file::close::handle(channel, room, &val).await,
+        "file::say" => file::say::handle(channel, room, &val).await,
         _ => {
             tracing::error!("Unkown method request: {:?}", method);
         }
@@ -86,6 +92,37 @@ mod ping {
             .send_json(&serde_json::json!({
                 "method": METHOD,
                 "timestamp": chrono::offset::Local::now().to_string(),
+            }))
+            .await;
+    }
+}
+
+/// Ping pong
+mod init {
+    use crate::channel::*;
+    use crate::client::*;
+    use crate::room::*;
+    use chrono;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "init";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let path = json["path"].as_str().unwrap().to_string();
+
+        let client = Client::new(path.clone());
+
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        room.add_client(channel.get_connection().addr, client);
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": METHOD,
+                "message": format!("Done initialized in [{}]", path),
+                "status": "success",
             }))
             .await;
     }

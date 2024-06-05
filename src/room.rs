@@ -23,8 +23,8 @@ use std::net::SocketAddr;
 pub struct Room {
     password: Option<String>,             // room password
     path: String,                         // workspace path
-    files: Vec<File>,                     // files are being visited
     clients: HashMap<SocketAddr, Client>, // Connections in this room
+    files: Vec<File>,                     // files are being visited
 }
 
 impl Room {
@@ -32,8 +32,8 @@ impl Room {
         Self {
             path: _path.to_string(),
             password: _password,
-            files: Vec::new(),
             clients: HashMap::new(),
+            files: Vec::new(),
         }
     }
 

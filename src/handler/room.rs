@@ -13,6 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::channel::*;
+use crate::client::*;
+use crate::room::*;
+use serde_json::Value;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+/// Check if the client has entered the room.
+///
+/// Use this when re-using client and room variables.
+///
+/// # Arguments
+///
+/// * `channel` - Send error message when not entered.
+/// * `client` - The client to check to see if entered.
+/// * `method` - The method id.
+pub async fn check_entered(channel: &mut Channel, client: &mut Client, method: &str) -> bool {
+    if client.entered() {
+        return true;
+    }
+
+    channel
+        .send_json(&serde_json::json!({
+            "method": method,
+            "message": "You haven't entered the room yet",
+            "status": "failure",
+        }))
+        .await;
+
+    return false;
+}
+
+/// Ensure the client is entered.
+///
+/// Use this when not re-using client and room variables.
+///
+/// # Arguments
+///
+/// * `channel` - Send error message when not entered.
+/// * `room` - Room use to get the client.
+/// * `method` - The method id.
+pub async fn ensure_entered(channel: &mut Channel, room: &Arc<Mutex<Room>>, method: &str) -> bool {
+    let addr = &channel.get_connection().addr;
+    let mut room = room.lock().await;
+    let client = room.get_client_mut(addr).unwrap();
+
+    check_entered(channel, client, method).await
+}
 
 /// Enter room
 pub mod enter {
@@ -119,9 +167,10 @@ pub mod exit {
 /// This message goes across the project.
 pub mod broadcast {
     use crate::channel::*;
+    use crate::handler::room::*;
     use crate::room::*;
     use serde_json::Value;
-    use std::sync::Arc;
+    use std::sync::{Arc, MutexGuard};
     use tokio::sync::Mutex;
 
     const METHOD: &str = "room::broadcast";
@@ -131,14 +180,7 @@ pub mod broadcast {
         let mut room = room.lock().await;
         let client = room.get_client_mut(addr).unwrap();
 
-        if !client.entered() {
-            channel
-                .send_json(&serde_json::json!({
-                    "method": METHOD,
-                    "message": "You haven't entered the room yet",
-                    "status": "failure",
-                }))
-                .await;
+        if !check_entered(channel, client, METHOD).await {
             return;
         }
 
@@ -146,7 +188,7 @@ pub mod broadcast {
 
         channel.broadcast_json(&serde_json::json!({
             "method": METHOD,
-            "username: ": client.username().unwrap(),
+            "username": client.username().unwrap(),
             "message": message,
             "status": "success",
         }));
@@ -156,14 +198,21 @@ pub mod broadcast {
 /// Room Users
 ///
 /// Return a list of users in room.
-pub mod users {
+pub mod list_users {
     use crate::channel::*;
+    use crate::handler::room::*;
     use crate::room::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
+    const METHOD: &str = "room::list_users";
+
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        if !ensure_entered(channel, room, METHOD).await {
+            return;
+        }
+
         // TODO: ..
     }
 }
