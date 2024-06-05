@@ -25,6 +25,8 @@ use std::fs::metadata;
 use std::net::SocketAddr;
 use std::path::Path;
 
+const COGUREIGNORE: &str = ".cogruignore";
+
 pub struct Room {
     password: Option<String>,             // room password
     path: String,                         // workspace path
@@ -64,7 +66,7 @@ impl Room {
 
     /// Return the custom ignore file path.
     fn ignore_file(&self) -> String {
-        let ignore = Path::new(&self.path).join(".cogruignore");
+        let ignore = Path::new(&self.path).join(COGUREIGNORE);
         String::from(ignore.to_str().unwrap())
     }
 
