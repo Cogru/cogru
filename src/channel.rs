@@ -49,7 +49,6 @@ impl Channel {
     /// Return true when channel is local.
     pub fn is_local(&self) -> bool {
         let ip = self.connection.addr.ip();
-        println!("add: {:?}", ip.to_string());
         ip.to_string() == "127.0.0.1"
     }
 
@@ -156,7 +155,6 @@ impl Channel {
         tracing::trace!("{} disconnected", self.connection.addr);
 
         let mut room = room.lock().await;
-
         room.remove_client(&self.connection.addr);
     }
 

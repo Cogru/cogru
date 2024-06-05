@@ -62,6 +62,29 @@ pub async fn ensure_entered(channel: &mut Channel, room: &Arc<Mutex<Room>>, meth
     check_entered(channel, client, method).await
 }
 
+/// Return true if admin; else false and send the error message to the client.
+///
+/// # Arguments
+///
+/// * `channel` - Used when sending the error message.
+/// * `client` - Client to see if it has the admin privileges.
+/// * `method` - The method id.
+pub async fn check_admin(channel: &mut Channel, client: &mut Client, method: &str) -> bool {
+    if client.admin() {
+        return true;
+    }
+
+    channel
+        .send_json(&serde_json::json!({
+            "method": method,
+            "message": "You are not the admin; only admin can operate this action",
+            "status": "failure",
+        }))
+        .await;
+
+    return false;
+}
+
 /// Enter room
 pub mod enter {
     use crate::channel::*;
@@ -157,6 +180,48 @@ pub mod exit {
             "method": METHOD,
             "message": format!("{} has left the room", username),
             "username": username,
+            "status": "success",
+        }));
+    }
+}
+
+/// Kcik the user out of the room.
+pub mod kick {
+    use crate::channel::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use serde_json::Value;
+    use std::sync::{Arc, MutexGuard};
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "room::kick";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
+
+        // Only the admin privileges can kick the user out!
+        if !check_admin(channel, client, METHOD).await {
+            return;
+        }
+
+        let admin_name = client.username().unwrap();
+        // target user to kick out
+        let target_name = json["username"].as_str().unwrap().to_string();
+
+        // kick
+        room.kick(&target_name);
+
+        channel.broadcast_json(&serde_json::json!({
+            "method": METHOD,
+            "username": target_name,
+            "admin": admin_name,
+            "message": format!("{} has been kicked out by {}", target_name, admin_name),
             "status": "success",
         }));
     }

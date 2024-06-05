@@ -151,6 +151,29 @@ impl Room {
         self.clients.insert(addr, client);
     }
 
+    /// Remove a client by address.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Key socket address.
+    pub fn remove_client(&mut self, addr: &SocketAddr) {
+        self.clients.remove(addr);
+    }
+
+    /// Return the socket address by username.
+    ///
+    /// # Arguments
+    ///
+    /// * `username` - The client username.
+    pub fn get_client_by_name(&mut self, username: &str) -> Option<&mut Client> {
+        for (addr, client) in self.clients.iter_mut() {
+            if client.username().unwrap() == username {
+                return Some(client);
+            }
+        }
+        None
+    }
+
     /// Return the client as immutable.
     ///
     /// # Arguments
@@ -169,12 +192,13 @@ impl Room {
         self.clients.get_mut(addr)
     }
 
-    /// Remove a client by address.
+    /// Click a client.
     ///
     /// # Arguments
     ///
-    /// * `addr` - Key socket address.
-    pub fn remove_client(&mut self, addr: &SocketAddr) {
-        self.clients.remove(addr);
+    /// * `username` - The client username.
+    pub fn kick(&mut self, username: &str) {
+        let client = self.get_client_by_name(username).unwrap();
+        client.exit_room();
     }
 }
