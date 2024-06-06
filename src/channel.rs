@@ -82,9 +82,9 @@ impl Channel {
 
                     self.process(room).await;
                 }
+                // Broadcasting happens here.
                 msg = rx.recv() => {
                     if let Ok(data) = msg {
-                        //stream.write(data.as_bytes()).await.unwrap();
                         self.connection.send_json_str(&data).await;
                     }
                 }
