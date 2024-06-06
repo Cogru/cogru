@@ -215,15 +215,27 @@ pub mod kick {
         let target_name = json["username"].as_str().unwrap().to_string();
 
         // kick
-        room.kick(&target_name);
+        let (kicked, message) = room.kick(&target_name);
 
-        channel.broadcast_json(&serde_json::json!({
-            "method": METHOD,
-            "username": target_name,
-            "admin": admin_name,
-            "message": format!("{} has been kicked out by {}", target_name, admin_name),
-            "status": "success",
-        }));
+        if kicked {
+            channel.broadcast_json(&serde_json::json!({
+                "method": METHOD,
+                "username": target_name,
+                "admin": admin_name,
+                "message": format!("{} has been kicked out by {}", target_name, admin_name),
+                "status": "success",
+            }));
+            return;
+        }
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": METHOD,
+                "username": target_name,
+                "message": message,
+                "status": "failure",
+            }))
+            .await;
     }
 }
 

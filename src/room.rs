@@ -197,8 +197,14 @@ impl Room {
     /// # Arguments
     ///
     /// * `username` - The client username.
-    pub fn kick(&mut self, username: &str) {
-        let client = self.get_client_by_name(username).unwrap();
-        client.exit_room();
+    pub fn kick(&mut self, username: &str) -> (bool, String) {
+        let client = self.get_client_by_name(username);
+
+        if client.is_none() {
+            return (false, format!("{} not found in the room", username));
+        }
+
+        client.unwrap().exit_room();
+        return (true, "".to_string());
     }
 }
