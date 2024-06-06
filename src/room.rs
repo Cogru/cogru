@@ -201,10 +201,16 @@ impl Room {
         let client = self.get_client_by_name(username);
 
         if client.is_none() {
-            return (false, format!("{} not found in the room", username));
+            return (false, format!("User `{}` not found in the room", username));
         }
 
-        client.unwrap().exit_room();
+        let client = client.unwrap();
+
+        if !client.entered() {
+            return (false, format!("User `{}` is not in the room", username));
+        }
+
+        client.exit_room();
         return (true, "".to_string());
     }
 }
