@@ -30,9 +30,9 @@ const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
 
 pub struct Channel {
-    read_buf: [u8; BUF_SIZE],
-    data: Vec<u8>,
-    tx: Sender<String>,
+    read_buf: [u8; BUF_SIZE], // read buffer
+    data: Vec<u8>,            // hold json data
+    tx: Sender<String>,       // used for broadcasting
     connection: Connection,
 }
 

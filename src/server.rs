@@ -22,6 +22,8 @@ use tokio::net::TcpListener;
 use tokio::sync::broadcast;
 use tokio::sync::Mutex;
 
+const BROADCAST_CAPACITY: usize = 32;
+
 pub struct Server {
     host: String,
     port: u16,
@@ -52,7 +54,7 @@ impl Server {
 
         let listener = TcpListener::bind(self.addr()).await?;
 
-        let (tx, _) = broadcast::channel::<String>(32);
+        let (tx, _) = broadcast::channel::<String>(BROADCAST_CAPACITY);
 
         // TODO: Add error handling.
         loop {
