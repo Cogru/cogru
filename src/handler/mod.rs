@@ -38,6 +38,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::kick" => room::kick::handle(channel, room, &val).await,
         "room::broadcast" => room::broadcast::handle(channel, room, &val).await,
         "room::list_users" => room::list_users::handle(channel, room, &val).await,
+        "room::sync" => room::sync::handle(channel, room, &val).await,
         "file::open" => file::open::handle(channel, room, &val).await,
         "file::close" => file::close::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,

@@ -17,6 +17,7 @@ use crate::channel::*;
 use crate::client::*;
 use crate::room::*;
 use serde_json::Value;
+use std::fs;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -298,17 +299,45 @@ pub mod sync {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
+    use path_slash::PathBufExt as _;
     use serde_json::Value;
+    use std::path::{Path, PathBuf};
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
     const METHOD: &str = "room::sync";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        if !ensure_entered(channel, room, METHOD).await {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
             return;
         }
 
-        // TODO: ..
+        let project_path = json["path"].as_str().unwrap().to_string();
+
+        let room_path = room.get_path().clone();
+        let files = room.get_files();
+
+        for file in files.iter() {
+            let abs_path = file.get_path();
+            let content = fs::read_to_string(abs_path).expect("Unable to read file");
+
+            // Replace the room path to client's project path, so the client
+            // can use the path directly.
+            let path = abs_path.replace(&room_path, &project_path);
+            let path = PathBuf::from_slash(&path).to_slash().unwrap().to_string();
+
+            channel
+                .send_json(&serde_json::json!({
+                    "method": METHOD,
+                    "path": path,
+                    "content": content,
+                    "status": "success",
+                }))
+                .await;
+        }
     }
 }

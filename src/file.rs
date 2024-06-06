@@ -14,21 +14,7 @@
  * limitations under the License.
  */
 use crate::chat::*;
-
-struct Region {
-    start: u64,
-    end: u64,
-}
-
-struct Mouse {
-    point: u64,
-}
-
-struct User {
-    username: String,
-    mouse: Mouse,
-    region: Region,
-}
+use crate::user::*;
 
 pub struct File {
     path: String,     // absolute path
@@ -45,6 +31,11 @@ impl File {
             chat: Chat::new(),
             content: String::default(),
         }
+    }
+
+    /// Return the file path.
+    pub fn get_path(&self) -> &String {
+        &self.path
     }
 
     /// Write the content to file.

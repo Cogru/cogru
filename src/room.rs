@@ -73,6 +73,16 @@ impl Room {
         }
     }
 
+    /// Return the project path.
+    pub fn get_path(&self) -> &String {
+        &self.path
+    }
+
+    /// Return a list of files need to be sync.
+    pub fn get_files(&mut self) -> &mut Vec<File> {
+        &mut self.files
+    }
+
     /// Return the custom ignore file path.
     fn ignore_file(&self) -> String {
         let ignore = Path::new(&self.path).join(COGUREIGNORE);
