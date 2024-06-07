@@ -297,6 +297,7 @@ pub mod list_users {
     }
 }
 
+/// Sync the entire room.
 pub mod sync {
     use crate::channel::*;
     use crate::handler::room::*;

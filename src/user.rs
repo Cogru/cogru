@@ -25,9 +25,20 @@ struct Mouse {
     point: u64,
 }
 
-#[derive(Default)]
 pub struct User {
     username: String,
+    path: String, // the user's location
     mouse: Mouse,
     region: Region,
+}
+
+impl User {
+    pub fn new(_username: String) -> Self {
+        Self {
+            username: _username,
+            path: "".to_string(),
+            mouse: Mouse::default(),
+            region: Region::default(),
+        }
+    }
 }

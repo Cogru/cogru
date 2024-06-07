@@ -15,27 +15,32 @@
  */
 use crate::chat::*;
 use crate::user::*;
+use std::collections::HashMap;
 
 pub struct File {
-    path: String,     // absolute path
-    users: Vec<User>, // a list of users in the file
-    chat: Chat,       // messages in this file
-    content: String,  // the file content
+    path: String,                 // absolute path
+    users: HashMap<String, User>, // a list of users in the file
+    chat: Chat,                   // messages in this file
+    view: String,                 // the file view
 }
 
 impl File {
     pub fn new(_path: String) -> Self {
         Self {
             path: _path,
-            users: Vec::new(),
+            users: HashMap::new(),
             chat: Chat::new(),
-            content: String::default(),
+            view: String::default(),
         }
     }
 
     /// Return the file path.
     pub fn get_path(&self) -> &String {
         &self.path
+    }
+
+    pub fn add_user(&mut self, username: &String) {
+        self.users.insert(username.clone(), User::new(username.clone()));
     }
 
     /// Write the content to file.

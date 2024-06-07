@@ -44,15 +44,27 @@ impl Client {
         self.username.clone()
     }
 
+    /// Return project path
+    pub fn get_path(&self) -> &String {
+        &self.path
+    }
+
+    /// Return true if client has entered the room.
     pub fn entered(&self) -> bool {
         self.entered
     }
 
+    /// Make client enter the room.
+    ///
+    /// # Arguments
+    ///
+    /// * `username` - Username of this client.
     pub fn enter_room(&mut self, username: Option<String>) {
         self.username = username;
         self.entered = true;
     }
 
+    /// Make client leave the room.
     pub fn exit_room(&mut self) {
         self.username = None;
         self.entered = false;

@@ -18,6 +18,7 @@ use crate::client::*;
 use crate::room::*;
 use serde_json::Value;
 use std::fs;
+use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -25,9 +26,24 @@ pub async fn check_opened(channel: &mut Channel, client: &mut Client, method: &s
     // TODO: ..
 }
 
+/// Convert path (absolute) to server local path.
+///
+/// # Arguments
+///
+/// * `addr` - Socket address used to get the client's project path.
+/// * `room` - Used to get client and room path.
+/// * `path` - Path we want to convert.
+pub fn to_room_path(addr: &SocketAddr, room: &mut Room, path: &String) -> String {
+    let server_path = room.get_path().clone();
+    let client = room.get_client_mut(addr).unwrap();
+    let project_path = client.get_path();
+    path.replace(project_path, &server_path)
+}
+
 /// Open file
 pub mod open {
     use crate::channel::*;
+    use crate::handler::file::*;
     use crate::handler::room::*;
     use crate::room::*;
     use serde_json::Value;
@@ -37,7 +53,30 @@ pub mod open {
     const METHOD: &str = "file::open";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        // TODO: ..
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+
+        // XXX: Get this early to avoid borrow errors.
+        let file_path = json["file"].as_str().unwrap().to_string();
+        let path = to_room_path(addr, &mut room, &file_path);
+
+        let client = room.get_client_mut(addr).unwrap();
+        let username = client.username().unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
+
+        // Get the registered file.
+        let file = room.get_file(&path);
+
+        // If not registered?
+        if file.is_none() {
+            // TODO: Create new file!
+        }
+
+        let file = file.unwrap();
+        file.add_user(&username);
     }
 }
 
