@@ -321,9 +321,9 @@ pub mod sync {
         let room_path = room.get_path().clone();
         let files = room.get_files();
 
-        for file in files.iter() {
-            let abs_path = file.get_path();
-            let content = fs::read_to_string(abs_path).expect("Unable to read file");
+        for file in files.into_iter() {
+            let abs_path = file;
+            let content = fs::read_to_string(&abs_path).expect("Unable to read file");
 
             // Replace the room path to client's project path, so the client
             // can use the path directly.

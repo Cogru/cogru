@@ -24,25 +24,37 @@ use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::broadcast::Sender;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tokio::sync::Mutex;
 
 const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
 
+type Tx = UnboundedSender<String>;
+type Rx = UnboundedReceiver<String>;
+
 pub struct Channel {
     read_buf: [u8; BUF_SIZE], // read buffer
     data: Vec<u8>,            // hold json data
-    tx: Sender<String>,       // used for broadcasting
     connection: Connection,
+    rx: Rx,
 }
 
 impl Channel {
-    pub fn new(_connection: Connection, _tx: Sender<String>) -> Self {
+    pub async fn new(_connection: Connection, room: &Arc<Mutex<Room>>) -> Self {
+        let mut room = room.lock().await;
+
+        // Create a channel for this peer
+        let (_tx, _rx) = mpsc::unbounded_channel();
+
+        room.peers.insert(_connection.addr, _tx);
+
         Self {
             read_buf: [0; BUF_SIZE],
             data: Vec::new(),
-            tx: _tx,
             connection: _connection,
+            rx: _rx,
         }
     }
 
@@ -54,8 +66,6 @@ impl Channel {
 
     /// Logic loop.
     pub async fn run(&mut self, room: &Arc<Mutex<Room>>) {
-        let mut rx = self.tx.subscribe();
-
         // Start receiving messages.
         loop {
             tokio::select! {
@@ -83,8 +93,8 @@ impl Channel {
                     self.process(room).await;
                 }
                 // Broadcasting happens here.
-                msg = rx.recv() => {
-                    if let Ok(data) = msg {
+                msg = self.rx.recv() => {
+                    if let Some(data) = msg {
                         self.connection.send_json_str(&data).await;
                     }
                 }
@@ -158,10 +168,12 @@ impl Channel {
         room.remove_client(&self.connection.addr);
     }
 
+    /// Return connection
     pub fn get_connection(&mut self) -> &mut Connection {
         &mut self.connection
     }
 
+    /// Return tcp stream
     pub fn get_stream(&mut self) -> &mut TcpStream {
         &mut self.connection.stream
     }
@@ -182,7 +194,7 @@ impl Channel {
     ///
     /// * `params` - [description]
     pub fn broadcast_json(&self, params: &Value) {
-        let _ = self.tx.send(params.to_string());
+        //let _ = self.tx.send(params.to_string());
     }
 }
 

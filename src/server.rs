@@ -22,8 +22,6 @@ use tokio::net::TcpListener;
 use tokio::sync::broadcast;
 use tokio::sync::Mutex;
 
-const BROADCAST_CAPACITY: usize = 32;
-
 pub struct Server {
     host: String,
     port: u16,
@@ -54,8 +52,6 @@ impl Server {
 
         let listener = TcpListener::bind(self.addr()).await?;
 
-        let (tx, _) = broadcast::channel::<String>(BROADCAST_CAPACITY);
-
         // TODO: Add error handling.
         loop {
             let (stream, addr) = listener.accept().await?;
@@ -65,10 +61,8 @@ impl Server {
             // Clone a handle to the `Shared` state for the new connection.
             let room = self.room.clone();
 
-            let tx = tx.clone();
-
             tokio::spawn(async move {
-                let mut channel = Channel::new(conn, tx);
+                let mut channel = Channel::new(conn, &room).await;
                 channel.run(&room).await;
             });
         }

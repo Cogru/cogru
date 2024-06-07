@@ -20,18 +20,24 @@ use crate::file::*;
 use crate::file::*;
 use ignore::WalkBuilder;
 use serde_json::Value;
+use std::collections::hash_map::Keys;
 use std::collections::HashMap;
 use std::fs::metadata;
 use std::net::SocketAddr;
 use std::path::Path;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 const COGUREIGNORE: &str = ".cogruignore";
 
+type Tx = UnboundedSender<String>;
+type Rx = UnboundedReceiver<String>;
+
 pub struct Room {
-    password: Option<String>,             // room password
+    password: Option<String>, // room password
+    pub peers: HashMap<SocketAddr, Tx>,
     path: String,                         // workspace path
     clients: HashMap<SocketAddr, Client>, // Connections in this room
-    files: Vec<File>,                     // files are being visited
+    files: HashMap<String, File>,         // files are being visited
     chat: Chat,                           // messages in this file
 }
 
@@ -39,9 +45,10 @@ impl Room {
     pub fn new(_path: &str, _password: Option<String>) -> Self {
         let mut room = Self {
             path: _path.to_string(),
+            peers: HashMap::new(),
             password: _password,
             clients: HashMap::new(),
-            files: Vec::new(),
+            files: HashMap::new(),
             chat: Chat::new(),
         };
         room.sync_files();
@@ -67,8 +74,8 @@ impl Room {
                 let path = dent.path().display().to_string();
                 println!("- {}", path);
 
-                let file = File::new(path);
-                self.files.push(file);
+                let file = File::new(path.clone());
+                self.files.insert(path, file);
             }
         }
     }
@@ -79,8 +86,8 @@ impl Room {
     }
 
     /// Return a list of files need to be sync.
-    pub fn get_files(&mut self) -> &mut Vec<File> {
-        &mut self.files
+    pub fn get_files(&self) -> Vec<&String> {
+        self.files.keys().clone().collect::<Vec<&String>>()
     }
 
     /// Return the custom ignore file path.
