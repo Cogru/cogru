@@ -29,12 +29,9 @@ use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 const COGUREIGNORE: &str = ".cogruignore";
 
-type Tx = UnboundedSender<String>;
-type Rx = UnboundedReceiver<String>;
-
 pub struct Room {
     password: Option<String>, // room password
-    pub peers: HashMap<SocketAddr, Tx>,
+    pub peers: HashMap<SocketAddr, UnboundedSender<String>>,
     path: String,                         // workspace path
     clients: HashMap<SocketAddr, Client>, // Connections in this room
     files: HashMap<String, File>,         // files are being visited
@@ -53,6 +50,37 @@ impl Room {
         };
         room.sync_files();
         room
+    }
+
+    /// Return the sender.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Socket Address.
+    pub fn get_sender(&mut self, addr: &SocketAddr) -> &mut UnboundedSender<String> {
+        self.peers.get_mut(addr).unwrap()
+    }
+
+    /// Send JSON object.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Socket Address.
+    /// * `params` - JSON object.
+    pub fn send_json(&mut self, addr: &SocketAddr, params: &Value) {
+        let sender = self.get_sender(addr);
+        let _ = sender.send(params.to_string());
+    }
+
+    /// Send JSON data to all clients.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - [description]
+    pub fn broadcast_json(&mut self, params: &Value) {
+        for (addr, sender) in self.peers.iter_mut() {
+            let _ = sender.send(params.to_string());
+        }
     }
 
     /// Sync files in the room

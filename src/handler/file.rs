@@ -97,13 +97,17 @@ pub mod say {
     const METHOD: &str = "file::say";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        if !ensure_entered(channel, room, METHOD).await {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
             return;
         }
 
         let message = json["message"].as_str().unwrap().to_string();
 
-        channel.broadcast_json(&serde_json::json!({
+        room.broadcast_json(&serde_json::json!({
             "method": METHOD,
             "message": message,
         }));

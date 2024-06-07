@@ -58,11 +58,10 @@ mod test {
 
     const METHOD: &str = "test";
 
-    pub async fn handle(channel: &mut Channel, _room: &Arc<Mutex<Room>>, json: &Value) {
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         tracing::trace!("method: {:?}", json["method"]);
 
-        //let mut room = room.lock().await;
-        //let client = room.get_client_mut(&channel.addr).unwrap();
+        let mut room = room.lock().await;
 
         channel
             .send_json(&serde_json::json!({
@@ -71,7 +70,7 @@ mod test {
             }))
             .await;
 
-        channel.broadcast_json(&serde_json::json!({
+        room.broadcast_json(&serde_json::json!({
             "method": METHOD,
             "message": "This is the broadcast test!",
         }));

@@ -31,14 +31,11 @@ use tokio::sync::Mutex;
 const SEPARATOR_LEN: usize = "\r\n".len();
 const BUF_SIZE: usize = 1024 * 1;
 
-type Tx = UnboundedSender<String>;
-type Rx = UnboundedReceiver<String>;
-
 pub struct Channel {
     read_buf: [u8; BUF_SIZE], // read buffer
     data: Vec<u8>,            // hold json data
     connection: Connection,
-    rx: Rx,
+    rx: UnboundedReceiver<String>,
 }
 
 impl Channel {
@@ -186,15 +183,6 @@ impl Channel {
     /// Wrapper for function Connection::send_json
     pub async fn send_json(&mut self, params: &Value) {
         self.get_connection().send_json(params).await;
-    }
-
-    /// Send JSON data to all clients.
-    ///
-    /// # Arguments
-    ///
-    /// * `params` - [description]
-    pub fn broadcast_json(&self, params: &Value) {
-        //let _ = self.tx.send(params.to_string());
     }
 }
 

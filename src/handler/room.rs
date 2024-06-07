@@ -128,7 +128,7 @@ pub mod enter {
                 client.enter_room(Some(username.clone()));
             }
 
-            channel.broadcast_json(&serde_json::json!({
+            room.broadcast_json(&serde_json::json!({
                 "method": METHOD,
                 "message": format!("{} has entered the room", username),
                 "username": username,
@@ -177,7 +177,7 @@ pub mod exit {
 
         let username = client.username().unwrap();
 
-        channel.broadcast_json(&serde_json::json!({
+        room.broadcast_json(&serde_json::json!({
             "method": METHOD,
             "message": format!("{} has left the room", username),
             "username": username,
@@ -219,7 +219,7 @@ pub mod kick {
         let (kicked, message) = room.kick(&target_name);
 
         if kicked {
-            channel.broadcast_json(&serde_json::json!({
+            room.broadcast_json(&serde_json::json!({
                 "method": METHOD,
                 "username": target_name,
                 "admin": admin_name,
@@ -258,15 +258,17 @@ pub mod broadcast {
         let mut room = room.lock().await;
         let client = room.get_client_mut(addr).unwrap();
 
+        let username = client.username().unwrap();
+
         if !check_entered(channel, client, METHOD).await {
             return;
         }
 
         let message = json["message"].as_str().unwrap().to_string();
 
-        channel.broadcast_json(&serde_json::json!({
+        room.broadcast_json(&serde_json::json!({
             "method": METHOD,
-            "username": client.username().unwrap(),
+            "username": username,
             "message": message,
             "status": "success",
         }));
