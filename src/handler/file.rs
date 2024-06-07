@@ -26,7 +26,7 @@ pub async fn check_opened(channel: &mut Channel, client: &mut Client, method: &s
     // TODO: ..
 }
 
-/// Convert path (absolute) to server local path.
+/// Convert path's absolute project path to this room path.
 ///
 /// # Arguments
 ///
