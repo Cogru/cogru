@@ -13,32 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::chat::*;
-use crate::user::*;
-use std::collections::HashMap;
 
-pub struct File {
-    path: String, // absolute path
-    chat: Chat,   // messages in this file
-    view: String, // the file view
-}
-
-impl File {
-    pub fn new(_path: String) -> Self {
-        Self {
-            path: _path,
-            chat: Chat::new(),
-            view: String::default(),
-        }
-    }
-
-    /// Return the file path.
-    pub fn get_path(&self) -> &String {
-        &self.path
-    }
-
-    /// Write the content to file.
-    pub async fn save(&self) {
-        // TODO: ..
-    }
+/// Wrapper to fs::read_to_string
+///
+/// # Arguments
+///
+/// * `path` - File path to read.
+pub fn read_to_string(path: &String) -> String {
+    std::fs::read_to_string(path).expect(format!("Unable to read file: {}", path).as_str())
 }

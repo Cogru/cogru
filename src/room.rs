@@ -25,17 +25,17 @@ use std::collections::HashMap;
 use std::fs::metadata;
 use std::net::SocketAddr;
 use std::path::Path;
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use tokio::sync::mpsc::UnboundedSender;
 
 const COGUREIGNORE: &str = ".cogruignore";
 
 pub struct Room {
-    password: Option<String>, // room password
-    pub peers: HashMap<SocketAddr, UnboundedSender<String>>,
-    path: String,                         // workspace path
-    clients: HashMap<SocketAddr, Client>, // Connections in this room
-    files: HashMap<String, File>,         // files are being visited
-    chat: Chat,                           // messages in this file
+    password: Option<String>,                                // room password
+    path: String,                                            // workspace path
+    pub peers: HashMap<SocketAddr, UnboundedSender<String>>, // broadcasting
+    clients: HashMap<SocketAddr, Client>,                    // Connections in this room
+    files: HashMap<String, File>,                            // files are being visited
+    chat: Chat,                                              // messages in this file
 }
 
 impl Room {
@@ -155,7 +155,7 @@ impl Room {
                 continue;
             }
 
-            if _client.username().unwrap() == *username {
+            if _client.user().unwrap().username == *username {
                 return true;
             }
         }
@@ -221,7 +221,7 @@ impl Room {
     /// * `username` - The client username.
     pub fn get_client_by_name(&mut self, username: &str) -> Option<&mut Client> {
         for (addr, client) in self.clients.iter_mut() {
-            if client.username().unwrap() == username {
+            if client.user().unwrap().username == username {
                 return Some(client);
             }
         }

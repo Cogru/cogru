@@ -125,7 +125,7 @@ pub mod enter {
             // Update client info!
             {
                 let client = room.get_client_mut(addr).unwrap();
-                client.enter_room(Some(username.clone()));
+                client.enter_room(&username);
             }
 
             room.broadcast_json(&serde_json::json!({
@@ -175,7 +175,7 @@ pub mod exit {
         // Leave the room
         client.exit_room();
 
-        let username = client.username().unwrap();
+        let username = client.user().unwrap().username.clone();
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,
@@ -211,7 +211,7 @@ pub mod kick {
             return;
         }
 
-        let admin_name = client.username().unwrap();
+        let admin_name = client.user().unwrap().username.clone();
         // target user to kick out
         let target_name = json["username"].as_str().unwrap().to_string();
 
@@ -258,7 +258,7 @@ pub mod broadcast {
         let mut room = room.lock().await;
         let client = room.get_client_mut(addr).unwrap();
 
-        let username = client.username().unwrap();
+        let username = client.user().unwrap().username.clone();
 
         if !check_entered(channel, client, METHOD).await {
             return;
@@ -302,6 +302,7 @@ pub mod sync {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
+    use crate::util::*;
     use path_slash::PathBufExt as _;
     use serde_json::Value;
     use std::path::{Path, PathBuf};
@@ -326,7 +327,7 @@ pub mod sync {
 
         for file in files.into_iter() {
             let abs_path = file;
-            let content = fs::read_to_string(&abs_path).expect("Unable to read file");
+            let content = read_to_string(&abs_path);
 
             // Replace the room path to client's project path, so the client
             // can use the path directly.

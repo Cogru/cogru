@@ -16,21 +16,22 @@
 use crate::connection::*;
 use crate::handler;
 use crate::room::*;
+use crate::user::*;
 
 pub struct Client {
-    username: Option<String>, // name of this client
-    entered: bool,            // Is inside the room?
-    path: String,             // workspace path
-    admin: bool,              // admin privileges
+    entered: bool,      // Is inside the room?
+    path: String,       // workspace path
+    admin: bool,        // admin privileges
+    user: Option<User>, // user view
 }
 
 impl Client {
     pub fn new(_path: String, _admin: bool) -> Self {
         Self {
-            username: None,
             entered: false,
             path: _path,
             admin: _admin,
+            user: None,
         }
     }
 
@@ -39,9 +40,9 @@ impl Client {
         self.admin
     }
 
-    /// Return the username of this client.
-    pub fn username(&self) -> Option<String> {
-        self.username.clone()
+    /// Return the user of this client.
+    pub fn user(&self) -> Option<&User> {
+        self.user.as_ref()
     }
 
     /// Return project path
@@ -59,14 +60,14 @@ impl Client {
     /// # Arguments
     ///
     /// * `username` - Username of this client.
-    pub fn enter_room(&mut self, username: Option<String>) {
-        self.username = username;
+    pub fn enter_room(&mut self, username: &String) {
+        self.user = Some(User::new(username.clone()));
         self.entered = true;
     }
 
     /// Make client leave the room.
     pub fn exit_room(&mut self) {
-        self.username = None;
+        self.user = None;
         self.entered = false;
     }
 }

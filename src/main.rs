@@ -26,6 +26,7 @@ mod handler;
 mod room;
 mod server;
 mod user;
+mod util;
 use crate::room::*;
 use clap::{arg, Arg, ArgMatches, Command};
 use dunce;

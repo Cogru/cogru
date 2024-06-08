@@ -15,21 +15,21 @@
  */
 
 #[derive(Default)]
-struct Region {
+pub struct Region {
     start: u64,
     end: u64,
 }
 
 #[derive(Default)]
-struct Mouse {
+pub struct Mouse {
     point: u64,
 }
 
 pub struct User {
-    username: String,
-    path: String, // the user's location
-    mouse: Mouse,
-    region: Region,
+    pub username: String,
+    pub path: String, // the user's location
+    pub mouse: Mouse,
+    pub region: Region,
 }
 
 impl User {
