@@ -27,7 +27,7 @@ pub struct Mouse {
 
 pub struct User {
     pub username: String,
-    pub path: String, // the user's location
+    pub path: Option<String>, // the user's location
     pub mouse: Mouse,
     pub region: Region,
 }
@@ -36,7 +36,7 @@ impl User {
     pub fn new(_username: String) -> Self {
         Self {
             username: _username,
-            path: "".to_string(),
+            path: None,
             mouse: Mouse::default(),
             region: Region::default(),
         }

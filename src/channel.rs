@@ -163,6 +163,7 @@ impl Channel {
 
         let mut room = room.lock().await;
         room.remove_client(&self.connection.addr);
+        room.remove_peer(&self.connection.addr);
     }
 
     /// Return connection

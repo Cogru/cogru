@@ -36,45 +36,6 @@ pub fn to_room_path(addr: &SocketAddr, room: &mut Room, path: &String) -> String
     path.replace(project_path, &server_path)
 }
 
-/// Open file
-pub mod open {
-    use crate::channel::*;
-    use crate::handler::file::*;
-    use crate::handler::room::*;
-    use crate::room::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
-
-    const METHOD: &str = "file::open";
-
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
-        let mut room = room.lock().await;
-
-        // XXX: Get this early to avoid borrow errors.
-        let file_path = json["file"].as_str().unwrap().to_string();
-        let path = to_room_path(addr, &mut room, &file_path);
-
-        let client = room.get_client_mut(addr).unwrap();
-        let username = client.user().unwrap().username.clone();
-
-        if !check_entered(channel, client, METHOD).await {
-            return;
-        }
-
-        // Get the registered file.
-        let file = room.get_file(&path);
-
-        // If not registered?
-        if file.is_none() {
-            // TODO: Create new file!
-        }
-
-        let file = file.unwrap();
-    }
-}
-
 /// Return a list of users in the file.
 pub mod users {
     use crate::channel::*;
@@ -109,11 +70,12 @@ pub mod sync {
         let mut room = room.lock().await;
 
         // XXX: Get this early to avoid borrow errors.
-        let file_path = json["file"].as_str().unwrap().to_string();
+        let file_path = data_str(json, "file");
         let local_path = to_room_path(addr, &mut room, &file_path);
 
         let client = room.get_client_mut(addr).unwrap();
 
+        // Check entered the room.
         if !check_entered(channel, client, METHOD).await {
             return;
         }
@@ -136,6 +98,7 @@ pub mod say {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
+    use crate::util::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -151,7 +114,7 @@ pub mod say {
             return;
         }
 
-        let message = json["message"].as_str().unwrap().to_string();
+        let message = data_str(json, "message");
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,

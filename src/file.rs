@@ -37,6 +37,11 @@ impl File {
         &self.path
     }
 
+    /// Return chat object.
+    pub fn get_chat(&mut self) -> &mut Chat {
+        &mut self.chat
+    }
+
     /// Write the content to file.
     pub async fn save(&self) {
         // TODO: ..

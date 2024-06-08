@@ -13,6 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use serde_json::Value;
+
+/// Get data as string.
+///
+/// # Arguments
+///
+/// * `json` - JSON object.
+/// * `key` - Key to the data.
+pub fn data_str(json: &Value, key: &str) -> String {
+    json[key].as_str().unwrap().to_string()
+}
 
 /// Wrapper to fs::read_to_string
 ///

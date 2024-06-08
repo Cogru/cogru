@@ -195,6 +195,11 @@ impl Room {
         return (true, "");
     }
 
+    /// Return a list of client.
+    pub fn get_clients(&mut self) -> Vec<&Client> {
+        self.clients.values().clone().collect::<Vec<&Client>>()
+    }
+
     /// Add a client to room.
     ///
     /// # Arguments
@@ -212,6 +217,15 @@ impl Room {
     /// * `addr` - Key socket address.
     pub fn remove_client(&mut self, addr: &SocketAddr) {
         self.clients.remove(addr);
+    }
+
+    /// Remove a client by address.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Key socket address.
+    pub fn remove_peer(&mut self, addr: &SocketAddr) {
+        self.peers.remove(addr);
     }
 
     /// Return the socket address by username.

@@ -39,6 +39,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::broadcast" => room::broadcast::handle(channel, room, &val).await,
         "room::users" => room::users::handle(channel, room, &val).await,
         "room::sync" => room::sync::handle(channel, room, &val).await,
+        "room::update" => room::update::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,
         "file::sync" => file::sync::handle(channel, room, &val).await,
         _ => {
@@ -102,6 +103,7 @@ mod init {
     use crate::channel::*;
     use crate::client::*;
     use crate::room::*;
+    use crate::util::*;
     use chrono;
     use serde_json::Value;
     use std::sync::Arc;
@@ -110,7 +112,7 @@ mod init {
     const METHOD: &str = "init";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let path = json["path"].as_str().unwrap().to_string();
+        let path = data_str(json, "path");
 
         // XXX: Every local client is the admin.
         let is_admin = channel.is_local();

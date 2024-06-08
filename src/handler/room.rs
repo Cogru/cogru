@@ -90,6 +90,7 @@ pub async fn check_admin(channel: &mut Channel, client: &mut Client, method: &st
 pub mod enter {
     use crate::channel::*;
     use crate::room::*;
+    use crate::util::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -112,11 +113,11 @@ pub mod enter {
             return;
         }
 
-        let username = json["username"].as_str().unwrap().to_string();
+        let username = data_str(json, "username");
         let password = if json["password"].is_null() {
             None
         } else {
-            Some(json["password"].as_str().unwrap().to_string())
+            Some(data_str(json, "password"))
         };
 
         let (entered, message) = room.enter(addr, &username, &password);
@@ -191,6 +192,7 @@ pub mod kick {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
+    use crate::util::*;
     use serde_json::Value;
     use std::sync::{Arc, MutexGuard};
     use tokio::sync::Mutex;
@@ -213,7 +215,7 @@ pub mod kick {
 
         let admin_name = client.user().unwrap().username.clone();
         // target user to kick out
-        let target_name = json["username"].as_str().unwrap().to_string();
+        let target_name = data_str(json, "username");
 
         // kick
         let (kicked, message) = room.kick(&target_name);
@@ -247,6 +249,7 @@ pub mod broadcast {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
+    use crate::util::*;
     use serde_json::Value;
     use std::sync::{Arc, MutexGuard};
     use tokio::sync::Mutex;
@@ -264,7 +267,7 @@ pub mod broadcast {
             return;
         }
 
-        let message = json["message"].as_str().unwrap().to_string();
+        let message = data_str(json, "message");
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,
@@ -272,6 +275,37 @@ pub mod broadcast {
             "message": message,
             "status": "success",
         }));
+    }
+}
+
+/// Update a single client's information.
+pub mod update {
+    use crate::channel::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use crate::util::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "room::update";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
+
+        let username = data_str(json, "username");
+        let path = data_str(json, "path");
+        let point = data_str(json, "point");
+        let region_start = data_str(json, "region_start");
+        let region_end = data_str(json, "region_end");
+
+        // TODO: ..
     }
 }
 
@@ -289,11 +323,17 @@ pub mod users {
     const METHOD: &str = "room::users";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        if !ensure_entered(channel, room, METHOD).await {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client_mut(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
             return;
         }
 
-        // TODO: ..
+        for client in room.get_clients().iter() {
+            let user = client.user();
+        }
     }
 }
 
@@ -320,7 +360,7 @@ pub mod sync {
             return;
         }
 
-        let project_path = json["path"].as_str().unwrap().to_string();
+        let project_path = data_str(json, "path");
 
         let room_path = room.get_path().clone();
         let files = room.get_files();
