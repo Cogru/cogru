@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-#[derive(Default)]
-pub struct Region {
-    start: u64,
-    end: u64,
-}
-
-#[derive(Default)]
-pub struct Mouse {
-    point: u64,
-}
+type RegionBeg = u64;
+type RegionEnd = u64;
 
 pub struct User {
     pub username: String,
     pub path: Option<String>, // the user's location
-    pub mouse: Mouse,
-    pub region: Region,
+    pub point: Option<u64>,
+    pub region: Option<(RegionBeg, RegionEnd)>,
 }
 
 impl User {
@@ -37,8 +29,21 @@ impl User {
         Self {
             username: _username,
             path: None,
-            mouse: Mouse::default(),
-            region: Region::default(),
+            point: None,
+            region: None,
         }
+    }
+
+    pub fn update(
+        &mut self,
+        path: &String,
+        point: &String,
+        region_start: &String,
+        region_end: &String,
+    ) {
+        self.path = Some(path.clone());
+        // TODO: ..
+        self.point = Some(0);
+        self.region = Some((0, 0));
     }
 }

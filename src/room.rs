@@ -196,8 +196,8 @@ impl Room {
     }
 
     /// Return a list of client.
-    pub fn get_clients(&mut self) -> Vec<&Client> {
-        self.clients.values().clone().collect::<Vec<&Client>>()
+    pub fn get_clients(&mut self) -> Vec<&mut Client> {
+        self.clients.values_mut().collect::<Vec<&mut Client>>()
     }
 
     /// Add a client to room.

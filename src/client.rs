@@ -45,6 +45,11 @@ impl Client {
         self.user.as_ref()
     }
 
+    /// Return the user of this client. (mutable)
+    pub fn user_mut(&mut self) -> Option<&mut User> {
+        self.user.as_mut()
+    }
+
     /// Return project path
     pub fn get_path(&self) -> &String {
         &self.path

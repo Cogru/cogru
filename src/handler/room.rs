@@ -299,13 +299,14 @@ pub mod update {
             return;
         }
 
-        let username = data_str(json, "username");
         let path = data_str(json, "path");
         let point = data_str(json, "point");
         let region_start = data_str(json, "region_start");
         let region_end = data_str(json, "region_end");
 
-        // TODO: ..
+        let user = client.user_mut().unwrap();
+
+        user.update(&path, &point, &region_start, &region_end);
     }
 }
 
@@ -331,8 +332,10 @@ pub mod users {
             return;
         }
 
-        for client in room.get_clients().iter() {
-            let user = client.user();
+        for client in room.get_clients().iter_mut() {
+            let user = client.user_mut();
+
+            // TODO: ..
         }
     }
 }
