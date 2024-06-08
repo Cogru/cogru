@@ -96,6 +96,22 @@ pub mod close {
     }
 }
 
+/// Return a list of users in the file.
+pub mod users {
+    use crate::channel::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "file::users";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        // TODO: ..
+    }
+}
+
 /// Sync file
 pub mod sync {
     use crate::channel::*;

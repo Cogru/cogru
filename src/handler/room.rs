@@ -278,7 +278,7 @@ pub mod broadcast {
 /// Room Users
 ///
 /// Return a list of users in room.
-pub mod list_users {
+pub mod users {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
@@ -286,7 +286,7 @@ pub mod list_users {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    const METHOD: &str = "room::list_users";
+    const METHOD: &str = "room::users";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         if !ensure_entered(channel, room, METHOD).await {
