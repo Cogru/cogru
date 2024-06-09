@@ -28,11 +28,13 @@ mod server;
 mod user;
 mod util;
 use crate::room::*;
+use crate::util::*;
 use clap::{arg, Arg, ArgMatches, Command};
 use dunce;
 use fmt::Layer;
 use rpassword;
 use server::Server;
+use std::env::current_dir;
 use std::io;
 use std::io::Write;
 use tracing_subscriber::{fmt, layer::SubscriberExt};
@@ -127,6 +129,11 @@ async fn main() {
         .get_matches();
 
     let current_dir = get_workspace(&matches);
+    let mut current_dir = to_slash(&current_dir);
+
+    if !str::ends_with(&current_dir, "/") {
+        current_dir = format!("{}/", current_dir);
+    }
 
     let port = matches
         .get_one::<String>("port")

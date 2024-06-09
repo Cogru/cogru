@@ -13,28 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::channel::*;
-use crate::client::*;
-use crate::room::*;
-use serde_json::Value;
-use std::fs;
-use std::net::SocketAddr;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-
-/// Convert path's absolute project path to this room path.
-///
-/// # Arguments
-///
-/// * `addr` - Socket address used to get the client's project path.
-/// * `room` - Used to get client and room path.
-/// * `path` - Path we want to convert.
-pub fn to_room_path(addr: &SocketAddr, room: &mut Room, path: &String) -> String {
-    let server_path = room.get_path().clone();
-    let client = room.get_client_mut(addr).unwrap();
-    let project_path = client.get_path();
-    path.replace(project_path, &server_path)
-}
 
 /// Return a list of users in the file.
 pub mod users {

@@ -18,6 +18,7 @@ use crate::client::*;
 use crate::room::*;
 use serde_json::Value;
 use std::fs;
+use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -84,6 +85,20 @@ pub async fn check_admin(channel: &mut Channel, client: &mut Client, method: &st
         .await;
 
     return false;
+}
+
+/// Convert path's absolute project path to this room path.
+///
+/// # Arguments
+///
+/// * `addr` - Socket address used to get the client's project path.
+/// * `room` - Used to get client and room path.
+/// * `path` - Path we want to convert.
+pub fn to_room_path(addr: &SocketAddr, room: &mut Room, path: &String) -> String {
+    let server_path = room.get_path().clone();
+    let client = room.get_client_mut(addr).unwrap();
+    let project_path = client.get_path();
+    path.replace(project_path, &server_path)
 }
 
 /// Enter room
@@ -333,11 +348,23 @@ pub mod users {
             return;
         }
 
+        let mut users = Vec::new();
+
         for client in room.get_clients().iter_mut() {
             let user = client.user_mut();
 
-            // TODO: ..
+            users.push(user.unwrap().clone());
         }
+
+        let users = serde_json::to_string(&users).unwrap();
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": METHOD,
+                "clients": users,
+                "status": "success",
+            }))
+            .await;
     }
 }
 

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::user::*;
 use path_slash::PathBufExt as _;
 use serde_json::Value;
 use std::path::PathBuf;
@@ -50,11 +51,11 @@ pub fn parse_u64(data: Option<String>) -> Option<u64> {
 ///
 /// * `start` - Start region point.
 /// * `end` - End region point.
-pub fn to_region(start: Option<u64>, end: Option<u64>) -> Option<(u64, u64)> {
+pub fn to_region(start: Option<u64>, end: Option<u64>) -> Option<Region> {
     if start.is_none() || end.is_none() {
         None
     } else {
-        Some((start.unwrap(), end.unwrap()))
+        Some(Region::new(start, end))
     }
 }
 

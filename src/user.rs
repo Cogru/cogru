@@ -13,15 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use serde::{Deserialize, Serialize};
 
-type RegionBeg = u64;
-type RegionEnd = u64;
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Region {
+    pub start: Option<u64>,
+    pub end: Option<u64>,
+}
 
+impl Region {
+    pub fn new(_start: Option<u64>, _end: Option<u64>) -> Self {
+        Self {
+            start: _start,
+            end: _end,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct User {
     pub username: String,
     pub path: Option<String>, // the user's location
     pub point: Option<u64>,
-    pub region: Option<(RegionBeg, RegionEnd)>,
+    pub region: Option<Region>,
 }
 
 impl User {
@@ -34,12 +48,7 @@ impl User {
         }
     }
 
-    pub fn update(
-        &mut self,
-        path: Option<String>,
-        point: Option<u64>,
-        region: Option<(RegionBeg, RegionEnd)>,
-    ) {
+    pub fn update(&mut self, path: Option<String>, point: Option<u64>, region: Option<Region>) {
         self.path = path;
         self.point = point;
         self.region = region;
