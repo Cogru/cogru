@@ -311,15 +311,12 @@ pub mod update {
         }
 
         let path = data_str(json, "path");
-        let point = data_str(json, "point");
-        let region_start = data_str(json, "region_start");
-        let region_end = data_str(json, "region_end");
+        let point = data_u64(json, "point");
+        let region_start = data_u64(json, "region_start");
+        let region_end = data_u64(json, "region_end");
 
         let user = client.user_mut().unwrap();
 
-        let point = parse_u64(point);
-        let region_start = parse_u64(region_start);
-        let region_end = parse_u64(region_end);
         let region = to_region(region_start, region_end);
 
         user.update(path, point, region);

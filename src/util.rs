@@ -31,6 +31,19 @@ pub fn data_str(json: &Value, key: &str) -> Option<String> {
     Some(json[key].as_str().unwrap().to_string())
 }
 
+/// Get data as string.
+///
+/// # Arguments
+///
+/// * `json` - JSON object.
+/// * `key` - Key to the data.
+pub fn data_u64(json: &Value, key: &str) -> Option<u64> {
+    if json[key].is_null() {
+        return None;
+    }
+    Some(json[key].as_u64().unwrap())
+}
+
 /// Parse data to u64.
 ///
 /// # Arguments

@@ -37,21 +37,27 @@ use server::Server;
 use std::env::current_dir;
 use std::io;
 use std::io::Write;
+use tracing::Level;
+use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, layer::SubscriberExt};
 
 const DOT_COGRU: &str = "./.cogru";
 
+const LOG_LEVEL: Level = Level::DEBUG; // Default is `DEBUG`
+
 /// Setup logger rotator.
 ///
 /// https://docs.rs/tracing-appender/0.2.3/tracing_appender/non_blocking/struct.WorkerGuard.html
-pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
+pub fn setup_logger() -> WorkerGuard {
     println!("Setup logger :::");
     let file_appender = tracing_appender::rolling::hourly(DOT_COGRU, "example.log");
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
-    let subscriber = tracing_subscriber::registry()
-        .with(Layer::new().with_writer(io::stdout))
+    let subscriber = tracing_subscriber::fmt()
+        .with_max_level(LOG_LEVEL)
+        .finish()
         .with(Layer::new().with_writer(non_blocking));
+
     tracing::subscriber::set_global_default(subscriber).expect("Unable to set a global subscriber");
     guard // Don't drop this!
 }
