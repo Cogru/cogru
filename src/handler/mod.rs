@@ -112,7 +112,7 @@ mod init {
     const METHOD: &str = "init";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let path = data_str(json, "path");
+        let path = data_str(json, "path").unwrap();
 
         // XXX: Every local client is the admin.
         let is_admin = channel.is_local();

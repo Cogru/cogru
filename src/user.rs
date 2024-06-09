@@ -36,14 +36,12 @@ impl User {
 
     pub fn update(
         &mut self,
-        path: &String,
-        point: &String,
-        region_start: &String,
-        region_end: &String,
+        path: Option<String>,
+        point: Option<u64>,
+        region: Option<(RegionBeg, RegionEnd)>,
     ) {
-        self.path = Some(path.clone());
-        // TODO: ..
-        self.point = Some(0);
-        self.region = Some((0, 0));
+        self.path = path;
+        self.point = point;
+        self.region = region;
     }
 }

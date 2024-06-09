@@ -70,7 +70,7 @@ pub mod sync {
         let mut room = room.lock().await;
 
         // XXX: Get this early to avoid borrow errors.
-        let file_path = data_str(json, "file");
+        let file_path = data_str(json, "file").unwrap();
         let local_path = to_room_path(addr, &mut room, &file_path);
 
         let client = room.get_client_mut(addr).unwrap();
@@ -114,7 +114,7 @@ pub mod say {
             return;
         }
 
-        let message = data_str(json, "message");
+        let message = data_str(json, "message").unwrap();
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,

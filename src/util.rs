@@ -23,8 +23,39 @@ use std::path::PathBuf;
 ///
 /// * `json` - JSON object.
 /// * `key` - Key to the data.
-pub fn data_str(json: &Value, key: &str) -> String {
-    json[key].as_str().unwrap().to_string()
+pub fn data_str(json: &Value, key: &str) -> Option<String> {
+    if json[key].is_null() {
+        return None;
+    }
+    Some(json[key].as_str().unwrap().to_string())
+}
+
+/// Parse data to u64.
+///
+/// # Arguments
+///
+/// * `data` - Target data to be parsed.
+pub fn parse_u64(data: Option<String>) -> Option<u64> {
+    if data.is_none() {
+        return None;
+    }
+    let data = data.unwrap();
+    let data = Some(data.parse::<u64>().unwrap());
+    data
+}
+
+/// Convert two Option<64> to region tuple.
+///
+/// # Arguments
+///
+/// * `start` - Start region point.
+/// * `end` - End region point.
+pub fn to_region(start: Option<u64>, end: Option<u64>) -> Option<(u64, u64)> {
+    if start.is_none() || end.is_none() {
+        None
+    } else {
+        Some((start.unwrap(), end.unwrap()))
+    }
 }
 
 /// Wrapper to fs::read_to_string

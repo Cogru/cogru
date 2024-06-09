@@ -113,12 +113,8 @@ pub mod enter {
             return;
         }
 
-        let username = data_str(json, "username");
-        let password = if json["password"].is_null() {
-            None
-        } else {
-            Some(data_str(json, "password"))
-        };
+        let username = data_str(json, "username").unwrap();
+        let password = data_str(json, "password");
 
         let (entered, message) = room.enter(addr, &username, &password);
 
@@ -215,7 +211,7 @@ pub mod kick {
 
         let admin_name = client.user().unwrap().username.clone();
         // target user to kick out
-        let target_name = data_str(json, "username");
+        let target_name = data_str(json, "username").unwrap();
 
         // kick
         let (kicked, message) = room.kick(&target_name);
@@ -267,7 +263,7 @@ pub mod broadcast {
             return;
         }
 
-        let message = data_str(json, "message");
+        let message = data_str(json, "message").unwrap();
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,
@@ -306,7 +302,12 @@ pub mod update {
 
         let user = client.user_mut().unwrap();
 
-        user.update(&path, &point, &region_start, &region_end);
+        let point = parse_u64(point);
+        let region_start = parse_u64(region_start);
+        let region_end = parse_u64(region_end);
+        let region = to_region(region_start, region_end);
+
+        user.update(path, point, region);
     }
 }
 
@@ -361,7 +362,7 @@ pub mod sync {
             return;
         }
 
-        let project_path = data_str(json, "path");
+        let project_path = data_str(json, "path").unwrap();
 
         let room_path = room.get_path().clone();
         let files = room.get_files();
