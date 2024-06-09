@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use path_slash::PathBufExt as _;
 use serde_json::Value;
+use std::path::PathBuf;
 
 /// Get data as string.
 ///
@@ -32,4 +34,13 @@ pub fn data_str(json: &Value, key: &str) -> String {
 /// * `path` - File path to read.
 pub fn read_to_string(path: &String) -> String {
     std::fs::read_to_string(path).expect(format!("Unable to read file: {}", path).as_str())
+}
+
+/// Convert backslash to slash.
+///
+/// # Arguments
+///
+/// * `path` - Target path to be converted.
+pub fn to_slash(path: &String) -> String {
+    PathBuf::from_slash(path).to_slash().unwrap().to_string()
 }

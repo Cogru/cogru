@@ -17,7 +17,7 @@ use crate::chat::*;
 use crate::client::*;
 use crate::connection::*;
 use crate::file::*;
-use crate::file::*;
+use crate::util::*;
 use ignore::WalkBuilder;
 use serde_json::Value;
 use std::collections::hash_map::Keys;
@@ -100,7 +100,8 @@ impl Room {
 
             if md.is_file() {
                 let path = dent.path().display().to_string();
-                println!("- {}", path);
+                let path = to_slash(&path);
+                println!("  - Sync file {}", path);
 
                 let file = File::new(path.clone());
                 self.files.insert(path, file);

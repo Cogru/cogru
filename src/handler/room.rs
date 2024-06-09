@@ -346,9 +346,7 @@ pub mod sync {
     use crate::handler::room::*;
     use crate::room::*;
     use crate::util::*;
-    use path_slash::PathBufExt as _;
     use serde_json::Value;
-    use std::path::{Path, PathBuf};
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
@@ -375,7 +373,7 @@ pub mod sync {
             // Replace the room path to client's project path, so the client
             // can use the path directly.
             let path = abs_path.replace(&room_path, &project_path);
-            let path = PathBuf::from_slash(&path).to_slash().unwrap().to_string();
+            let path = to_slash(&path);
 
             channel
                 .send_json(&serde_json::json!({

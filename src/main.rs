@@ -43,6 +43,7 @@ const DOT_COGRU: &str = "./.cogru";
 ///
 /// https://docs.rs/tracing-appender/0.2.3/tracing_appender/non_blocking/struct.WorkerGuard.html
 pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
+    println!("Setup logger :::");
     let file_appender = tracing_appender::rolling::hourly(DOT_COGRU, "example.log");
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
@@ -62,6 +63,7 @@ pub fn setup_logger() -> tracing_appender::non_blocking::WorkerGuard {
 async fn start_server(port: u16, working_dir: &str, password: Option<String>) {
     let _guard = setup_logger();
 
+    println!("Start room server :::");
     let room = Room::new(working_dir, password);
     let mut server = Server::new("127.0.0.1", port, room);
     let _ = server.start().await;
