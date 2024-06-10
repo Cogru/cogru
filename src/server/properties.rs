@@ -63,8 +63,12 @@ impl Properties {
     /// # Arguments
     ///
     /// * `key` - The key used to find value.
-    pub fn get(&self, key: &str) -> Option<&String> {
-        self.data.get(key)
+    pub fn get(&self, key: &str) -> Option<String> {
+        let value = self.data.get(key);
+        if value.is_none() {
+            return None;
+        }
+        Some(value.unwrap().clone())
     }
 
     /// Return property value or the default value when null.
@@ -78,6 +82,6 @@ impl Properties {
         if data.is_none() {
             return default_value.to_string();
         }
-        data.unwrap().clone()
+        data.unwrap()
     }
 }

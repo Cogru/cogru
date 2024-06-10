@@ -79,8 +79,8 @@ async fn start_server(prop: Properties, port: u16, working_dir: &str, password: 
     let _ = server.start().await;
 }
 
-/// Set up the session password.
-fn get_password() -> Option<String> {
+/// Ask the password.
+fn ask_password() -> Option<String> {
     print!("Set the password: ");
     io::stdout().flush().unwrap();
     let password = rpassword::read_password().unwrap();
@@ -94,6 +94,28 @@ fn get_password() -> Option<String> {
     } else {
         None
     }
+}
+
+/// Find out what's the password.
+///
+/// # Arguments
+///
+/// * `matches` - Argument matches.
+/// * `prop` - Properties object.
+fn get_password(matches: &ArgMatches, prop: &Properties) -> Option<String> {
+    let no_password = matches.get_flag("no_password");
+    let prop_password = prop.get("cogru.Password");
+
+    let password = if no_password {
+        None
+    } else if !prop_password.is_none() {
+        // if password is set, use that one!
+        prop_password
+    } else {
+        Some(ask_password().expect("Confirm password doesn't match"))
+    };
+
+    password
 }
 
 /// Return the workspace path.
@@ -163,13 +185,7 @@ async fn main() {
     // Convert to u16
     let port = port.parse::<u16>().unwrap();
 
-    let no_password = matches.get_flag("no_password");
-
-    let password = if no_password {
-        None
-    } else {
-        Some(get_password().expect("Confirm password doesn't match"))
-    };
+    let password = get_password(&matches, &prop);
 
     // Setup logger
     let _guard = setup_logger(&prop);
