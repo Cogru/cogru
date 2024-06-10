@@ -51,6 +51,20 @@ impl Client {
         self.user.as_mut()
     }
 
+    /// Return the user relative path.
+    pub fn user_relative_path(&self) -> Option<String> {
+        let user = self.user.clone();
+        if user.is_none() {
+            return None;
+        }
+        let path = user.unwrap().path;
+        if path.is_none() {
+            return None;
+        }
+        let path = path.unwrap();
+        Some(path.replace(&self.path, ""))
+    }
+
     /// Return project path
     pub fn get_path(&self) -> &String {
         &self.path

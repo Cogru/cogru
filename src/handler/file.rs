@@ -31,10 +31,6 @@ pub mod users {
         let room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
-        // XXX: Get this early to avoid borrow errors.
-        let file_path = data_str(json, "file").unwrap();
-        let local_path = to_room_path(addr, &room, &file_path);
-
         if !check_entered(channel, &client, METHOD).await {
             return;
         }
@@ -69,7 +65,7 @@ pub mod users {
             }
 
             // Ignore if not in the same file.
-            if local_path != user.path.clone().unwrap() {
+            if client.user_relative_path() != _client.user_relative_path() {
                 continue;
             }
 
