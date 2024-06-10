@@ -31,7 +31,7 @@ use tokio::sync::Mutex;
 /// * `channel` - Send error message when not entered.
 /// * `client` - The client to check to see if entered.
 /// * `method` - The method id.
-pub async fn check_entered(channel: &mut Channel, client: &mut Client, method: &str) -> bool {
+pub async fn check_entered(channel: &mut Channel, client: &Client, method: &str) -> bool {
     if client.entered() {
         return true;
     }
@@ -71,7 +71,7 @@ pub async fn ensure_entered(channel: &mut Channel, room: &Arc<Mutex<Room>>, meth
 /// * `channel` - Used when sending the error message.
 /// * `client` - Client to see if it has the admin privileges.
 /// * `method` - The method id.
-pub async fn check_admin(channel: &mut Channel, client: &mut Client, method: &str) -> bool {
+pub async fn check_admin(channel: &mut Channel, client: &Client, method: &str) -> bool {
     if client.admin() {
         return true;
     }
@@ -94,9 +94,9 @@ pub async fn check_admin(channel: &mut Channel, client: &mut Client, method: &st
 /// * `addr` - Socket address used to get the client's project path.
 /// * `room` - Used to get client and room path.
 /// * `path` - Path we want to convert.
-pub fn to_room_path(addr: &SocketAddr, room: &mut Room, path: &String) -> String {
+pub fn to_room_path(addr: &SocketAddr, room: &Room, path: &str) -> String {
     let server_path = room.get_path().clone();
-    let client = room.get_client_mut(addr).unwrap();
+    let client = room.get_client(addr).unwrap();
     let project_path = client.get_path();
     path.replace(project_path, &server_path)
 }
@@ -213,14 +213,14 @@ pub mod kick {
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
-        let client = room.get_client_mut(addr).unwrap();
+        let client = room.get_client(addr).unwrap();
 
         if !check_entered(channel, client, METHOD).await {
             return;
         }
 
         // Only the admin privileges can kick the user out!
-        if !check_admin(channel, client, METHOD).await {
+        if !check_admin(channel, &client, METHOD).await {
             return;
         }
 
@@ -269,8 +269,8 @@ pub mod broadcast {
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
-        let mut room = room.lock().await;
-        let client = room.get_client_mut(addr).unwrap();
+        let room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
 
         let username = client.user().unwrap().username.clone();
 
@@ -338,8 +338,8 @@ pub mod users {
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
-        let mut room = room.lock().await;
-        let client = room.get_client_mut(addr).unwrap();
+        let room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
 
         if !check_entered(channel, client, METHOD).await {
             return;
@@ -347,8 +347,8 @@ pub mod users {
 
         let mut users = Vec::new();
 
-        for client in room.get_clients().iter_mut() {
-            let user = client.user_mut();
+        for client in room.get_clients().iter() {
+            let user = client.user();
 
             users.push(user.unwrap().clone());
         }
@@ -379,8 +379,10 @@ pub mod sync {
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
-        let mut room = room.lock().await;
-        let client = room.get_client_mut(addr).unwrap();
+        let room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
+
+        println!("addr: {:?}", addr);
 
         if !check_entered(channel, client, METHOD).await {
             return;

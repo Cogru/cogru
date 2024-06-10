@@ -40,6 +40,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::users" => room::users::handle(channel, room, &val).await,
         "room::sync" => room::sync::handle(channel, room, &val).await,
         "room::update" => room::update::handle(channel, room, &val).await,
+        "file::users" => file::users::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,
         "file::sync" => file::sync::handle(channel, room, &val).await,
         _ => {
@@ -61,7 +62,7 @@ mod test {
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         tracing::trace!("method: {:?}", json["method"]);
 
-        let mut room = room.lock().await;
+        let room = room.lock().await;
 
         channel
             .send_json(&serde_json::json!({

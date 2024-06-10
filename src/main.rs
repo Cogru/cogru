@@ -78,8 +78,6 @@ async fn start_server(prop: &Properties, port: u16, working_dir: &str, password:
     println!("Start room server :::");
     let host = prop.get_or_default("cogru.Host", DEFAULT_HOST);
 
-    println!("host: {}", host);
-
     let room = Room::new(working_dir, password);
     let mut server = Server::new(&host, port, room);
     let _ = server.start().await;
@@ -159,6 +157,9 @@ async fn main() {
 
     let mut port = matches.get_one::<String>("port").unwrap();
 
+    // XXX: If the port is the same as default port, we
+    // assumed the user did not input the port number.
+    // Let's respect the properties' port instead.
     if port == DEFAULT_PORT {
         port = &prop_port;
     }

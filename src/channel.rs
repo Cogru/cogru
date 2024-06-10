@@ -45,7 +45,11 @@ impl Channel {
         // Create a channel for this peer
         let (_tx, _rx) = mpsc::unbounded_channel();
 
-        room.peers.insert(_connection.addr, _tx);
+        let addr = _connection.addr;
+        //let addr = _connection.stream.peer_addr().unwrap();
+        room.peers.insert(addr, _tx);
+
+        //room.peers.insert(_connection.addr, _tx);
 
         Self {
             read_buf: [0; BUF_SIZE],

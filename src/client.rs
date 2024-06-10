@@ -18,6 +18,7 @@ use crate::handler;
 use crate::room::*;
 use crate::user::*;
 
+#[derive(PartialEq)]
 pub struct Client {
     entered: bool,      // Is inside the room?
     path: String,       // workspace path

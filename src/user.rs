@@ -15,7 +15,7 @@
  */
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct Region {
     pub start: Option<u64>,
     pub end: Option<u64>,
@@ -30,7 +30,7 @@ impl Region {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct User {
     pub username: String,
     pub path: Option<String>, // the user's location

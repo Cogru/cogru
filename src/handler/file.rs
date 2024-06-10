@@ -19,6 +19,7 @@ pub mod users {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
+    use crate::util::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -26,7 +27,59 @@ pub mod users {
     const METHOD: &str = "file::users";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        // TODO: ..
+        let addr = &channel.get_connection().addr;
+        let room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
+
+        // XXX: Get this early to avoid borrow errors.
+        let file_path = data_str(json, "file").unwrap();
+        let local_path = to_room_path(addr, &room, &file_path);
+
+        if !check_entered(channel, &client, METHOD).await {
+            return;
+        }
+
+        let this_user = client.user().unwrap();
+
+        // If user is not in the file, ignore it.
+        if this_user.path.is_none() {
+            return;
+        }
+
+        // Prepare data to send.
+        let mut users = Vec::new();
+
+        for _client in room.get_clients().iter() {
+            let user = _client.user();
+
+            if user.is_none() {
+                continue;
+            }
+
+            let user = user.unwrap();
+
+            // Ignore the sender client.
+            if this_user == user {
+                continue;
+            }
+
+            // Ignore if not in the same file.
+            if local_path != user.path.clone().unwrap() {
+                continue;
+            }
+
+            users.push(user.clone());
+        }
+
+        let users = serde_json::to_string(&users).unwrap();
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": METHOD,
+                "clients": users,
+                "status": "success",
+            }))
+            .await;
     }
 }
 
@@ -45,13 +98,13 @@ pub mod sync {
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
-        let mut room = room.lock().await;
+        let room = room.lock().await;
 
         // XXX: Get this early to avoid borrow errors.
         let file_path = data_str(json, "file").unwrap();
-        let local_path = to_room_path(addr, &mut room, &file_path);
+        let local_path = to_room_path(addr, &room, &file_path);
 
-        let client = room.get_client_mut(addr).unwrap();
+        let client = room.get_client(addr).unwrap();
 
         // Check entered the room.
         if !check_entered(channel, client, METHOD).await {
@@ -85,8 +138,8 @@ pub mod say {
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
-        let mut room = room.lock().await;
-        let client = room.get_client_mut(addr).unwrap();
+        let room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
 
         if !check_entered(channel, client, METHOD).await {
             return;

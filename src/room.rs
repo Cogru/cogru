@@ -77,8 +77,8 @@ impl Room {
     /// # Arguments
     ///
     /// * `params` - [description]
-    pub fn broadcast_json(&mut self, params: &Value) {
-        for (addr, sender) in self.peers.iter_mut() {
+    pub fn broadcast_json(&self, params: &Value) {
+        for (addr, sender) in self.peers.iter() {
             let _ = sender.send(params.to_string());
         }
     }
@@ -197,7 +197,12 @@ impl Room {
     }
 
     /// Return a list of client.
-    pub fn get_clients(&mut self) -> Vec<&mut Client> {
+    pub fn get_clients(&self) -> Vec<&Client> {
+        self.clients.values().collect::<Vec<&Client>>()
+    }
+
+    /// Return a list of client.
+    pub fn get_clients_mut(&mut self) -> Vec<&mut Client> {
         self.clients.values_mut().collect::<Vec<&mut Client>>()
     }
 
