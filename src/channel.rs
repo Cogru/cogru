@@ -15,6 +15,7 @@
  */
 use crate::client::*;
 use crate::connection::*;
+use crate::constant::*;
 use crate::handler;
 use crate::room::*;
 use async_recursion::async_recursion;
@@ -45,11 +46,8 @@ impl Channel {
         // Create a channel for this peer
         let (_tx, _rx) = mpsc::unbounded_channel();
 
-        let addr = _connection.addr;
-        //let addr = _connection.stream.peer_addr().unwrap();
+        let addr = _connection.stream.peer_addr().unwrap();
         room.peers.insert(addr, _tx);
-
-        //room.peers.insert(_connection.addr, _tx);
 
         Self {
             read_buf: [0; BUF_SIZE],
@@ -60,9 +58,9 @@ impl Channel {
     }
 
     /// Return true when channel is local.
-    pub fn is_local(&self) -> bool {
+    pub fn is_local(&self, room: &Room) -> bool {
         let ip = self.connection.addr.ip();
-        ip.to_string() == "127.0.0.1"
+        ip.to_string() == room.get_prop().get_or_default("cogru.Host", HOST)
     }
 
     /// Logic loop.

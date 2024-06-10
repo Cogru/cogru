@@ -17,6 +17,7 @@ use crate::chat::*;
 use crate::client::*;
 use crate::connection::*;
 use crate::file::*;
+use crate::server::properties::*;
 use crate::util::*;
 use ignore::WalkBuilder;
 use serde_json::Value;
@@ -30,6 +31,7 @@ use tokio::sync::mpsc::UnboundedSender;
 const COGUREIGNORE: &str = ".cogruignore";
 
 pub struct Room {
+    prop: Properties,                                        // server properties
     password: Option<String>,                                // room password
     path: String,                                            // workspace path
     pub peers: HashMap<SocketAddr, UnboundedSender<String>>, // broadcasting
@@ -39,8 +41,9 @@ pub struct Room {
 }
 
 impl Room {
-    pub fn new(_path: &str, _password: Option<String>) -> Self {
+    pub fn new(_prop: Properties, _path: &str, _password: Option<String>) -> Self {
         let mut room = Self {
+            prop: _prop,
             path: _path.to_string(),
             peers: HashMap::new(),
             password: _password,
@@ -50,6 +53,11 @@ impl Room {
         };
         room.sync_files();
         room
+    }
+
+    /// Return properties object.
+    pub fn get_prop(&self) -> &Properties {
+        &self.prop
     }
 
     /// Return the sender.
@@ -78,7 +86,7 @@ impl Room {
     ///
     /// * `params` - [description]
     pub fn broadcast_json(&self, params: &Value) {
-        for (addr, sender) in self.peers.iter() {
+        for (_addr, sender) in self.peers.iter() {
             let _ = sender.send(params.to_string());
         }
     }

@@ -21,12 +21,14 @@ mod channel;
 mod chat;
 mod client;
 mod connection;
+mod constant;
 mod file;
 mod handler;
 mod room;
 mod server;
 mod user;
 mod util;
+use crate::constant::*;
 use crate::room::*;
 use crate::util::*;
 use clap::{arg, Arg, ArgMatches, Command};
@@ -41,12 +43,6 @@ use std::str::FromStr;
 use tracing::Level;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, layer::SubscriberExt};
-
-const DOT_COGRU: &str = "./.cogru";
-const PROP_FILE: &str = "./Cogru.properties";
-
-const DEFAULT_HOST: &str = "127.0.0.1";
-const DEFAULT_PORT: &str = "8786";
 
 /// Setup logger rotator.
 ///
@@ -74,11 +70,11 @@ pub fn setup_logger(prop: &Properties) -> WorkerGuard {
 ///
 /// * `port` - port to start.
 /// * `password` - password to enter the session.
-async fn start_server(prop: &Properties, port: u16, working_dir: &str, password: Option<String>) {
+async fn start_server(prop: Properties, port: u16, working_dir: &str, password: Option<String>) {
     println!("Start room server :::");
-    let host = prop.get_or_default("cogru.Host", DEFAULT_HOST);
+    let host = prop.get_or_default("cogru.Host", HOST);
 
-    let room = Room::new(working_dir, password);
+    let room = Room::new(prop, working_dir, password);
     let mut server = Server::new(&host, port, room);
     let _ = server.start().await;
 }
@@ -126,7 +122,7 @@ fn setup_cli() -> ArgMatches {
             arg!(--port <VALUE>)
                 .required(false)
                 .help("Port number")
-                .default_value(DEFAULT_PORT),
+                .default_value(PORT),
         )
         .arg(
             Arg::new("no_password")
@@ -144,7 +140,7 @@ fn setup_cli() -> ArgMatches {
 #[tokio::main]
 async fn main() {
     let prop = Properties::new(&PROP_FILE);
-    let prop_port = prop.get_or_default("cogru.Port", DEFAULT_PORT);
+    let prop_port = prop.get_or_default("cogru.Port", PORT);
 
     let matches = setup_cli();
 
@@ -160,7 +156,7 @@ async fn main() {
     // XXX: If the port is the same as default port, we
     // assumed the user did not input the port number.
     // Let's respect the properties' port instead.
-    if port == DEFAULT_PORT {
+    if port == PORT {
         port = &prop_port;
     }
 
@@ -179,5 +175,5 @@ async fn main() {
     let _guard = setup_logger(&prop);
 
     // Start the server
-    start_server(&prop, port, &current_dir, password).await;
+    start_server(prop, port, &current_dir, password).await;
 }
