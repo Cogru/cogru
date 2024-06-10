@@ -21,10 +21,9 @@ $ cogru . --no-password
 
 ## 📁 Similar Projects
 
-- [floobits](https://floobits.com/) (abandoned)
-- [tandem](https://github.com/typeintandem/tandem)
-- [duckly](https://duckly.com/) (malware?)
-
+- [floobits][] (abandoned)
+- [tandem][]
+- [duckly][] (malware?)
 
 ## ⚜️ License
 
@@ -43,3 +42,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 See [`LICENSE`](./LICENSE) for details.
+
+
+<!-- Links -->
+
+[floobits]: https://floobits.com/
+[tandem]: https://github.com/typeintandem/tandem
+[duckly]: https://duckly.com/
