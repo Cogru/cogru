@@ -35,7 +35,9 @@ pub struct User {
     pub username: String,
     pub path: Option<String>, // the user's location
     pub point: Option<u64>,
-    pub region: Option<Region>,
+    //pub region: Option<Region>,
+    pub region_start: Option<u64>,
+    pub region_end: Option<u64>,
 }
 
 impl User {
@@ -44,13 +46,23 @@ impl User {
             username: _username,
             path: None,
             point: None,
-            region: None,
+            //region: None,
+            region_start: None,
+            region_end: None,
         }
     }
 
-    pub fn update(&mut self, path: Option<String>, point: Option<u64>, region: Option<Region>) {
+    pub fn update(
+        &mut self,
+        path: Option<String>,
+        point: Option<u64>,
+        region_start: Option<u64>,
+        region_end: Option<u64>,
+    ) {
         self.path = path;
         self.point = point;
-        self.region = region;
+        //self.region = region;
+        self.region_start = region_start;
+        self.region_end = region_end;
     }
 }

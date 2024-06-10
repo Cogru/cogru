@@ -317,9 +317,9 @@ pub mod update {
 
         let user = client.user_mut().unwrap();
 
-        let region = to_region(region_start, region_end);
+        //let region = to_region(region_start, region_end);
 
-        user.update(path, point, region);
+        user.update(path, point, region_start, region_end);
     }
 }
 
