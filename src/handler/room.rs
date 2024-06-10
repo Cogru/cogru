@@ -382,8 +382,6 @@ pub mod sync {
         let room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
-        println!("addr: {:?}", addr);
-
         if !check_entered(channel, client, METHOD).await {
             return;
         }

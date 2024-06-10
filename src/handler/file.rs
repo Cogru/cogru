@@ -63,6 +63,11 @@ pub mod users {
                 continue;
             }
 
+            // Ignore when user not visiting any project files.
+            if user.path.is_none() {
+                continue;
+            }
+
             // Ignore if not in the same file.
             if local_path != user.path.clone().unwrap() {
                 continue;
