@@ -23,6 +23,7 @@ use std::io::BufReader;
 use std::net::ToSocketAddrs;
 use std::path::Path;
 
+/// Properties file.
 pub struct Properties {
     data: HashMap<String, String>,
     read: bool,
@@ -38,6 +39,11 @@ impl Properties {
         prop
     }
 
+    /// Read in the properties file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The properties file path.
     fn read(&mut self, path: &str) {
         if !Path::new(path).exists() {
             return;
