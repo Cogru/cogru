@@ -14,6 +14,125 @@
  * limitations under the License.
  */
 
+// Addition and Deletion to the file.
+pub mod update {
+    use crate::channel::*;
+    use crate::handler::file::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use crate::util::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "file::update";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+
+        let path = data_str(json, "path").unwrap();
+        let add_or_delete = data_str(json, "add_or_delete").unwrap();
+        let beg = data_u64(json, "beg").unwrap();
+        let end = data_u64(json, "end").unwrap();
+        let content = data_str(json, "content").unwrap();
+
+        let path = to_room_path(&addr, &room, &path);
+        let file = room.get_file_mut(&path);
+
+        if file.is_none() {
+            tracing::debug!("Updating an non-existence file: {}", path);
+            // TODO: Create one?
+            return;
+        }
+
+        let file = file.unwrap();
+
+        file.update(&add_or_delete, beg, end, &content);
+    }
+}
+
+/// Save file.
+pub mod save {
+    use crate::channel::*;
+    use crate::handler::file::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use crate::util::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "file::save";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+
+        let path = data_str(json, "path").unwrap();
+        let path = to_room_path(&addr, &room, &path);
+        let file = room.get_file_mut(&path);
+
+        if file.is_none() {
+            tracing::debug!("Updating an non-existence file: {}", path);
+            // TODO: Create one?
+            return;
+        }
+
+        let file = file.unwrap();
+        file.save();
+
+        let relative_path = no_room_path(&room, &path);
+
+        room.broadcast_json(&serde_json::json!({
+            "method": METHOD,
+            "file": relative_path,
+            "status": "success",
+        }));
+    }
+}
+
+/// Sync file
+pub mod sync {
+    use crate::channel::*;
+    use crate::handler::file::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use crate::util::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "file::sync";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let room = room.lock().await;
+
+        // XXX: Get this early to avoid borrow errors.
+        let file_path = data_str(json, "file").unwrap();
+        let local_path = to_room_path(addr, &room, &file_path);
+
+        let client = room.get_client(addr).unwrap();
+
+        // Check entered the room.
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
+
+        let content = read_to_string(&local_path);
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": METHOD,
+                "file": file_path,  // send it back directly
+                "content": content,
+                "status": "success",
+            }))
+            .await;
+    }
+}
+
 /// Return a list of users in the file.
 pub mod users {
     use crate::channel::*;
@@ -78,47 +197,6 @@ pub mod users {
             .send_json(&serde_json::json!({
                 "method": METHOD,
                 "clients": users,
-                "status": "success",
-            }))
-            .await;
-    }
-}
-
-/// Sync file
-pub mod sync {
-    use crate::channel::*;
-    use crate::handler::file::*;
-    use crate::handler::room::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
-
-    const METHOD: &str = "file::sync";
-
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
-        let room = room.lock().await;
-
-        // XXX: Get this early to avoid borrow errors.
-        let file_path = data_str(json, "file").unwrap();
-        let local_path = to_room_path(addr, &room, &file_path);
-
-        let client = room.get_client(addr).unwrap();
-
-        // Check entered the room.
-        if !check_entered(channel, client, METHOD).await {
-            return;
-        }
-
-        let content = read_to_string(&local_path);
-
-        channel
-            .send_json(&serde_json::json!({
-                "method": METHOD,
-                "file": file_path,  // send it back directly
-                "content": content,
                 "status": "success",
             }))
             .await;

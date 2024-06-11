@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::room::*;
 use crate::user::*;
 use path_slash::PathBufExt as _;
 use serde_json::Value;
+use std::net::SocketAddr;
 use std::path::PathBuf;
 
 /// Get data as string.
@@ -79,6 +81,31 @@ pub fn to_region(start: Option<u64>, end: Option<u64>) -> Option<Region> {
 /// * `path` - File path to read.
 pub fn read_to_string(path: &String) -> String {
     std::fs::read_to_string(path).expect(format!("Unable to read file: {}", path).as_str())
+}
+
+/// Convert path's absolute project path to this room path.
+///
+/// # Arguments
+///
+/// * `addr` - Socket address used to get the client's project path.
+/// * `room` - Used to get client and room path.
+/// * `path` - Path we want to convert.
+pub fn to_room_path(addr: &SocketAddr, room: &Room, path: &str) -> String {
+    let room_path = room.get_path().clone();
+    let client = room.get_client(addr).unwrap();
+    let project_path = client.get_path();
+    path.replace(project_path, &room_path)
+}
+
+/// Remove room path.
+///
+/// # Arguments
+///
+/// * `room` - Room object.
+/// * `path` - Path we want to remove room path.
+pub fn no_room_path(room: &Room, path: &str) -> String {
+    let room_path = room.get_path().clone();
+    path.replace(&room_path, "")
 }
 
 /// Convert backslash to slash.

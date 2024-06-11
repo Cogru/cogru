@@ -23,7 +23,6 @@ use crate::room::*;
 use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
 pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) {
     let v = serde_json::from_str(json);
     let val: Value = v.unwrap();
@@ -40,9 +39,11 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::users" => room::users::handle(channel, room, &val).await,
         "room::sync" => room::sync::handle(channel, room, &val).await,
         "room::update_client" => room::update_client::handle(channel, room, &val).await,
+        "file::update" => file::update::handle(channel, room, &val).await,
+        "file::save" => file::save::handle(channel, room, &val).await,
+        "file::sync" => file::sync::handle(channel, room, &val).await,
         "file::users" => file::users::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,
-        "file::sync" => file::sync::handle(channel, room, &val).await,
         _ => {
             tracing::error!("Unkown method request: {:?}", method);
         }

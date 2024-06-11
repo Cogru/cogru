@@ -16,9 +16,6 @@
 use crate::channel::*;
 use crate::client::*;
 use crate::room::*;
-use serde_json::Value;
-use std::fs;
-use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -85,20 +82,6 @@ pub async fn check_admin(channel: &mut Channel, client: &Client, method: &str) -
         .await;
 
     return false;
-}
-
-/// Convert path's absolute project path to this room path.
-///
-/// # Arguments
-///
-/// * `addr` - Socket address used to get the client's project path.
-/// * `room` - Used to get client and room path.
-/// * `path` - Path we want to convert.
-pub fn to_room_path(addr: &SocketAddr, room: &Room, path: &str) -> String {
-    let server_path = room.get_path().clone();
-    let client = room.get_client(addr).unwrap();
-    let project_path = client.get_path();
-    path.replace(project_path, &server_path)
 }
 
 /// Enter room
@@ -202,10 +185,9 @@ pub mod exit {
 pub mod kick {
     use crate::channel::*;
     use crate::handler::room::*;
-    use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
-    use std::sync::{Arc, MutexGuard};
+    use std::sync::Arc;
     use tokio::sync::Mutex;
 
     const METHOD: &str = "room::kick";
@@ -259,10 +241,9 @@ pub mod kick {
 pub mod broadcast {
     use crate::channel::*;
     use crate::handler::room::*;
-    use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
-    use std::sync::{Arc, MutexGuard};
+    use std::sync::Arc;
     use tokio::sync::Mutex;
 
     const METHOD: &str = "room::broadcast";
@@ -293,7 +274,6 @@ pub mod broadcast {
 pub mod update_client {
     use crate::channel::*;
     use crate::handler::room::*;
-    use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
     use std::sync::Arc;
@@ -329,7 +309,6 @@ pub mod update_client {
 pub mod users {
     use crate::channel::*;
     use crate::handler::room::*;
-    use crate::room::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -369,7 +348,6 @@ pub mod users {
 pub mod sync {
     use crate::channel::*;
     use crate::handler::room::*;
-    use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
     use std::sync::Arc;
@@ -389,7 +367,7 @@ pub mod sync {
         let project_path = data_str(json, "path").unwrap();
 
         let room_path = room.get_path().clone();
-        let files = room.get_files();
+        let files = room.get_path_files();
 
         for file in files.into_iter() {
             let abs_path = file;

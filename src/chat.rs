@@ -15,6 +15,7 @@
  */
 use crate::client::*;
 
+#[derive(Debug)]
 pub struct Message {
     username: String,
     content: String,
@@ -31,6 +32,7 @@ impl Message {
     }
 }
 
+#[derive(Debug)]
 pub struct Chat {
     messages: Vec<Message>, // messages in this file
 }

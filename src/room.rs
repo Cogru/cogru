@@ -127,12 +127,12 @@ impl Room {
     /// # Arguments
     ///
     /// * `path` - The file path.
-    pub fn get_file(&mut self, path: &String) -> Option<&mut File> {
+    pub fn get_file_mut(&mut self, path: &String) -> Option<&mut File> {
         self.files.get_mut(path)
     }
 
     /// Return a list of files need to be sync.
-    pub fn get_files(&self) -> Vec<&String> {
+    pub fn get_path_files(&self) -> Vec<&String> {
         self.files.keys().clone().collect::<Vec<&String>>()
     }
 

@@ -15,12 +15,14 @@
  */
 use crate::chat::*;
 use crate::user::*;
+use crate::util::*;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct File {
-    path: String, // absolute path
-    chat: Chat,   // messages in this file
-    view: String, // the file view
+    path: String,         // absolute path
+    chat: Chat,           // messages in this file
+    view: Option<String>, // the file view
 }
 
 impl File {
@@ -28,7 +30,7 @@ impl File {
         Self {
             path: _path,
             chat: Chat::new(),
-            view: String::default(),
+            view: None,
         }
     }
 
@@ -42,8 +44,29 @@ impl File {
         &mut self.chat
     }
 
+    fn load_file(&mut self) {
+        if !self.view.is_none() {
+            return;
+        }
+        self.view = Some(read_to_string(&self.path));
+    }
+
+    pub fn update(&mut self, add_or_delete: &String, beg: u64, end: u64, content: &String) {
+        self.load_file(); // ensure read
+
+        match add_or_delete.clone().as_str() {
+            "add" => {
+                //self.view.insert(content, beg);
+            }
+            "delete" => {}
+            _ => {
+                unreachable!()
+            }
+        }
+    }
+
     /// Write the content to file.
-    pub async fn save(&self) {
-        // TODO: ..
+    pub fn save(&self) {
+        let _ = std::fs::write(&self.path, &self.view.clone().unwrap());
     }
 }
