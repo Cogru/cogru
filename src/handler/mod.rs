@@ -39,7 +39,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::broadcast" => room::broadcast::handle(channel, room, &val).await,
         "room::users" => room::users::handle(channel, room, &val).await,
         "room::sync" => room::sync::handle(channel, room, &val).await,
-        "room::update" => room::update::handle(channel, room, &val).await,
+        "room::update_client" => room::update_client::handle(channel, room, &val).await,
         "file::users" => file::users::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,
         "file::sync" => file::sync::handle(channel, room, &val).await,
@@ -99,7 +99,7 @@ mod ping {
     }
 }
 
-/// Ping pong
+/// Initialize for client that has first connected.
 mod init {
     use crate::channel::*;
     use crate::client::*;

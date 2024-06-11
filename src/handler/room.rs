@@ -290,7 +290,7 @@ pub mod broadcast {
 }
 
 /// Update a single client's information.
-pub mod update {
+pub mod update_client {
     use crate::channel::*;
     use crate::handler::room::*;
     use crate::room::*;
