@@ -56,9 +56,12 @@ impl File {
 
         match add_or_delete.clone().as_str() {
             "add" => {
+                // TODO: ..
                 //self.view.insert(content, beg);
             }
-            "delete" => {}
+            "delete" => {
+                // TODO: ..
+            }
             _ => {
                 unreachable!()
             }
