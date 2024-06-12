@@ -33,9 +33,9 @@ pub mod update {
 
         let path = data_str(json, "path").unwrap();
         let add_or_delete = data_str(json, "add_or_delete").unwrap();
-        let beg = data_u64(json, "beg").unwrap();
-        let end = data_u64(json, "end").unwrap();
-        let content = data_str(json, "content").unwrap();
+        let beg = data_usize(json, "beg").unwrap();
+        let end = data_usize(json, "end").unwrap();
+        let contents = data_str(json, "contents").unwrap();
 
         let path = to_room_path(&addr, &room, &path);
         let file = room.get_file_mut(&path);
@@ -48,7 +48,7 @@ pub mod update {
 
         let file = file.unwrap();
 
-        file.update(&add_or_delete, beg, end, &content);
+        file.update(&add_or_delete, beg, end, &contents);
     }
 }
 
@@ -120,13 +120,13 @@ pub mod sync {
             return;
         }
 
-        let content = read_to_string(&local_path);
+        let contents = read_to_string(&local_path);
 
         channel
             .send_json(&serde_json::json!({
                 "method": METHOD,
                 "file": file_path,  // send it back directly
-                "content": content,
+                "contents": contents,
                 "status": "success",
             }))
             .await;

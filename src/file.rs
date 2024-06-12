@@ -16,13 +16,15 @@
 use crate::chat::*;
 use crate::user::*;
 use crate::util::*;
+use jumprope::{JumpRope, JumpRopeBuf};
 use std::collections::HashMap;
+use std::io::Write;
 
 #[derive(Debug)]
 pub struct File {
-    path: String,         // absolute path
-    chat: Chat,           // messages in this file
-    view: Option<String>, // the file view
+    path: String,              // absolute path
+    chat: Chat,                // messages in this file
+    view: Option<JumpRopeBuf>, // the file view
 }
 
 impl File {
@@ -48,19 +50,20 @@ impl File {
         if !self.view.is_none() {
             return;
         }
-        self.view = Some(read_to_string(&self.path));
+        let content = read_to_string(&self.path);
+        self.view = Some(JumpRopeBuf::from(content));
     }
 
-    pub fn update(&mut self, add_or_delete: &String, beg: u64, end: u64, content: &String) {
+    pub fn update(&mut self, add_or_delete: &String, beg: usize, end: usize, contents: &String) {
         self.load_file(); // ensure read
+        let view = self.view.as_mut().unwrap();
 
         match add_or_delete.clone().as_str() {
             "add" => {
-                // TODO: ..
-                //self.view.insert(content, beg);
+                view.insert(beg, &contents);
             }
             "delete" => {
-                // TODO: ..
+                view.remove(beg..end);
             }
             _ => {
                 unreachable!()
@@ -70,6 +73,8 @@ impl File {
 
     /// Write the content to file.
     pub fn save(&self) {
-        let _ = std::fs::write(&self.path, &self.view.clone().unwrap());
+        let view = self.view.clone().unwrap();
+        let contents = &view.to_string();
+        let _ = std::fs::write(&self.path, contents);
     }
 }

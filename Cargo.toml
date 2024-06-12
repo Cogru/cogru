@@ -12,6 +12,7 @@ clap = "4.5.4"
 dunce = "1.0.4"
 ignore = "0.4.22"
 java-properties = "2.0.0"
+jumprope = "1.1.2"
 path-slash = "0.2.1"
 rpassword = "7.3.1"
 serde = { version = "1.0.203", features = ["derive"] }

@@ -33,7 +33,7 @@ pub fn data_str(json: &Value, key: &str) -> Option<String> {
     Some(json[key].as_str().unwrap().to_string())
 }
 
-/// Get data as string.
+/// Get data as u64.
 ///
 /// # Arguments
 ///
@@ -44,6 +44,19 @@ pub fn data_u64(json: &Value, key: &str) -> Option<u64> {
         return None;
     }
     Some(json[key].as_u64().unwrap())
+}
+
+/// Get data as usize.
+///
+/// # Arguments
+///
+/// * `json` - JSON object.
+/// * `key` - Key to the data.
+pub fn data_usize(json: &Value, key: &str) -> Option<usize> {
+    if json[key].is_null() {
+        return None;
+    }
+    Some(json[key].to_string().parse::<usize>().unwrap())
 }
 
 /// Parse data to u64.
