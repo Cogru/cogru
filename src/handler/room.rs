@@ -371,7 +371,7 @@ pub mod sync {
 
         for file in files.into_iter() {
             let abs_path = file;
-            let content = read_to_string(&abs_path);
+            let contents = read_to_string(&abs_path);
 
             // Replace the room path to client's project path, so the client
             // can use the path directly.
@@ -382,7 +382,7 @@ pub mod sync {
                 .send_json(&serde_json::json!({
                     "method": METHOD,
                     "path": path,
-                    "content": content,
+                    "contents": contents,
                     "status": "success",
                 }))
                 .await;
