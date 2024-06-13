@@ -235,6 +235,7 @@ pub mod say {
         let file = no_room_path(&room, &file);
         let message = data_str(json, "message").unwrap();
 
+        // Get the peers that are in the file.
         let peers = room.peers_by_file(&room, &file);
 
         let params = &serde_json::json!({
