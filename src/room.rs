@@ -31,13 +31,13 @@ use tokio::sync::mpsc::UnboundedSender;
 const COGUREIGNORE: &str = ".cogruignore";
 
 pub struct Room {
-    prop: Properties,                                        // server properties
-    password: Option<String>,                                // room password
-    path: String,                                            // workspace path
-    pub peers: HashMap<SocketAddr, UnboundedSender<String>>, // broadcasting
-    clients: HashMap<SocketAddr, Client>,                    // Connections in this room
-    files: HashMap<String, File>,                            // files are being visited
-    chat: Chat,                                              // messages in this file
+    prop: Properties,                                    // server properties
+    password: Option<String>,                            // room password
+    path: String,                                        // workspace path
+    peers: HashMap<SocketAddr, UnboundedSender<String>>, // broadcasting
+    clients: HashMap<SocketAddr, Client>,                // Connections in this room
+    files: HashMap<String, File>,                        // files are being visited
+    chat: Chat,                                          // messages in this file
 }
 
 impl Room {
@@ -58,6 +58,11 @@ impl Room {
     /// Return properties object.
     pub fn get_prop(&self) -> &Properties {
         &self.prop
+    }
+
+    /// Get peers
+    pub fn peers(&mut self) -> &mut HashMap<SocketAddr, UnboundedSender<String>> {
+        &mut self.peers
     }
 
     /// Return the sender.
@@ -87,6 +92,20 @@ impl Room {
     /// * `params` - [description]
     pub fn broadcast_json(&self, params: &Value) {
         for (_addr, sender) in self.peers.iter() {
+            let _ = sender.send(params.to_string());
+        }
+    }
+
+    /// Send JSON data to all clients.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - [description]
+    pub fn broadcast_json_except(&self, params: &Value, addr: &SocketAddr) {
+        for (_addr, sender) in self.peers.iter() {
+            if _addr == addr {
+                continue;
+            }
             let _ = sender.send(params.to_string());
         }
     }

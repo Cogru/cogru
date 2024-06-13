@@ -71,10 +71,16 @@ impl File {
         }
     }
 
-    /// Write the content to file.
-    pub fn save(&self) {
+    /// Return the file contents.
+    pub fn contents(&mut self) -> String {
+        self.load_file(); // ensure read
         let view = self.view.clone().unwrap();
-        let contents = &view.to_string();
+        view.to_string()
+    }
+
+    /// Write the content to file.
+    pub fn save(&mut self) {
+        let contents = self.contents();
         let _ = std::fs::write(&self.path, contents);
     }
 }

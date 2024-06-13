@@ -82,13 +82,18 @@ pub mod save {
         let file = file.unwrap();
         file.save();
 
+        let contents = file.contents();
         let relative_path = no_room_path(&room, &path);
 
-        room.broadcast_json(&serde_json::json!({
-            "method": METHOD,
-            "file": relative_path,
-            "status": "success",
-        }));
+        room.broadcast_json_except(
+            &serde_json::json!({
+                "method": METHOD,
+                "file": relative_path,
+                "contents": contents,
+                "status": "success",
+            }),
+            addr,
+        );
     }
 }
 

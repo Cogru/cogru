@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::constant::*;
+use crate::room::*;
 use java_properties::read;
 use java_properties::write;
 use java_properties::PropertiesIter;
@@ -83,5 +85,13 @@ impl Properties {
             return default_value.to_string();
         }
         data.unwrap()
+    }
+
+    /* Customization */
+
+    /// Return property value `cogru.BufferSize`.
+    pub fn buf_size(&self) -> usize {
+        let buf_size = self.get_or_default("cogru.BufferSize", &BUF_SIZE.to_string());
+        buf_size.parse::<usize>().unwrap()
     }
 }

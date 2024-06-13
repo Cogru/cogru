@@ -19,3 +19,6 @@ pub const PROP_FILE: &str = "./Cogru.properties";
 
 pub const HOST: &str = "127.0.0.1";
 pub const PORT: &str = "8786";
+
+pub const SEPARATOR_LEN: usize = "\r\n".len();
+pub const BUF_SIZE: usize = 1024 * 8; // Default is 8192

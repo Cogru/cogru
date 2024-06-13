@@ -29,11 +29,8 @@ use tokio::sync::mpsc;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tokio::sync::Mutex;
 
-const SEPARATOR_LEN: usize = "\r\n".len();
-const BUF_SIZE: usize = 1024 * 1;
-
 pub struct Channel {
-    read_buf: [u8; BUF_SIZE], // read buffer
+    read_buf: Vec<u8>, // read buffer
     data: Vec<u8>,            // hold json data
     connection: Connection,
     rx: UnboundedReceiver<String>,
@@ -47,14 +44,20 @@ impl Channel {
         let (_tx, _rx) = mpsc::unbounded_channel();
 
         let addr = _connection.stream.peer_addr().unwrap();
-        room.peers.insert(addr, _tx);
+        room.peers().insert(addr, _tx);
 
-        Self {
-            read_buf: [0; BUF_SIZE],
+        let buf_size = room.get_prop().buf_size();
+
+        let mut new_channel = Self {
+            read_buf: Vec::new(),
             data: Vec::new(),
             connection: _connection,
             rx: _rx,
-        }
+        };
+
+        new_channel.read_buf.resize(buf_size, 0);
+
+        new_channel
     }
 
     /// Return true when channel is local.
