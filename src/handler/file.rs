@@ -229,11 +229,24 @@ pub mod say {
             return;
         }
 
+        let username = client.user().unwrap().username.clone();
+
+        let file = data_str(json, "file").unwrap();
+        let file = no_room_path(&room, &file);
         let message = data_str(json, "message").unwrap();
 
-        room.broadcast_json(&serde_json::json!({
+        let peers = room.peers_by_file(&room, &file);
+
+        let params = &serde_json::json!({
             "method": METHOD,
+            "username": username,  // Who speak this message?
+            "file": file,
             "message": message,
-        }));
+            "status": "success",
+        });
+
+        for (_addr, _sender) in peers.iter() {
+            let _ = _sender.send(params.to_string());
+        }
     }
 }

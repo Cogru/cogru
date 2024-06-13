@@ -65,6 +65,28 @@ impl Room {
         &mut self.peers
     }
 
+    /// Return peers by file.
+    ///
+    /// # Arguments
+    ///
+    /// * `file` - The file path.
+    pub fn peers_by_file(&self, room: &Room, file: &String) -> HashMap<&SocketAddr, &UnboundedSender<String>> {
+        let file = no_room_path(&room, &file);
+
+        let mut data = HashMap::new();
+
+        for (addr, sender) in self.peers.iter() {
+            let client = self.get_client(addr).unwrap();
+            let path = no_room_path(&room, client.get_path());
+            if path == file {
+                continue;
+            }
+            data.insert(addr, sender);
+        }
+
+        data
+    }
+
     /// Return the sender.
     ///
     /// # Arguments
