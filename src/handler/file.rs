@@ -45,10 +45,32 @@ pub mod update {
             return;
         }
 
+        let relative_path = file.unwrap().relative_path(&room);
+
         let file = room.get_file_mut(&addr, &path);
         let file = file.unwrap();
 
         file.update(&add_or_delete, beg, end, &contents);
+
+        // Get the peers that are in the file.
+        let peers = room.peers_by_file(&room, &relative_path);
+
+        let params = &serde_json::json!({
+            "method": METHOD,
+            "file": relative_path,
+            "add_or_delete": add_or_delete,
+            "beg": beg,
+            "end": end,
+            "contents": contents,
+            "status": "success",
+        });
+
+        for (_addr, _sender) in peers.iter() {
+            if *_addr == addr {
+                continue;
+            }
+            let _ = _sender.send(params.to_string());
+        }
     }
 }
 
@@ -149,7 +171,7 @@ pub mod info {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    const METHOD: &str = "file::users";
+    const METHOD: &str = "file::info";
 
     /// Return a list of user in file.
     ///
@@ -203,21 +225,12 @@ pub mod info {
         let room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
-        let file = data_str(json, "file").unwrap();
-        let file = room.get_file(&addr, &file);
+        //let file = data_str(json, "file").unwrap();
+        //let file = room.get_file(&addr, &file);
 
         if !check_entered(channel, &client, METHOD).await {
             return;
         }
-
-        if file.is_none() {
-            return;
-        }
-
-        let file = file.unwrap();
-
-        let file_path = file.relative_path(&room);
-        let contents = file.contents();
 
         let users = get_users(&room, &client);
         let users = serde_json::to_string(&users).unwrap();
@@ -225,8 +238,8 @@ pub mod info {
         channel
             .send_json(&serde_json::json!({
                 "method": METHOD,
-                "file": file_path,
-                "contents": contents,
+                //"file": file_path,
+                //"contents": contents,
                 "clients": users,
                 "status": "success",
             }))
