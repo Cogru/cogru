@@ -45,33 +45,10 @@ pub mod update {
             return;
         }
 
-        // First get relative path.
-        let relative_file = file.unwrap().get_relative_path(&room);
-
         let file = room.get_file_mut(&addr, &path);
         let file = file.unwrap();
 
         file.update(&add_or_delete, beg, end, &contents);
-
-        // Get the peers that are in the file.
-        let peers = room.peers_by_file(&room, &relative_file);
-
-        let params = &serde_json::json!({
-            "method": METHOD,
-            "file": relative_file,
-            "add_or_delete": add_or_delete,
-            "beg": beg,
-            "end": end,
-            "contens": contents,
-            "status": "success",
-        });
-
-        for (_addr, _sender) in peers.iter() {
-            if *_addr == addr {
-                continue;
-            }
-            let _ = _sender.send(params.to_string());
-        }
     }
 }
 
@@ -161,10 +138,12 @@ pub mod sync {
 }
 
 /// Return a list of users in the file.
-pub mod users {
+pub mod info {
     use crate::channel::*;
+    use crate::client::*;
     use crate::handler::room::*;
     use crate::room::*;
+    use crate::user::*;
     use crate::util::*;
     use serde_json::Value;
     use std::sync::Arc;
@@ -172,24 +151,22 @@ pub mod users {
 
     const METHOD: &str = "file::users";
 
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
-        let room = room.lock().await;
-        let client = room.get_client(addr).unwrap();
-
-        if !check_entered(channel, &client, METHOD).await {
-            return;
-        }
+    /// Return a list of user in file.
+    ///
+    /// # Arguments
+    ///
+    /// * `room` - It's used to get all users in room.
+    /// * `client` - Need the target client's file path.
+    fn get_users(room: &Room, client: &Client) -> Vec<User> {
+        // Prepare data to send.
+        let mut users = Vec::new();
 
         let this_user = client.user().unwrap();
 
         // If user is not in the file, ignore it.
         if this_user.path.is_none() {
-            return;
+            return users;
         }
-
-        // Prepare data to send.
-        let mut users = Vec::new();
 
         for _client in room.get_clients().iter() {
             let user = _client.user();
@@ -218,11 +195,38 @@ pub mod users {
             users.push(user.clone());
         }
 
+        users
+    }
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr;
+        let room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
+
+        let file = data_str(json, "file").unwrap();
+        let file = room.get_file(&addr, &file);
+
+        if !check_entered(channel, &client, METHOD).await {
+            return;
+        }
+
+        if file.is_none() {
+            return;
+        }
+
+        let file = file.unwrap();
+
+        let file_path = file.relative_path(&room);
+        let contents = file.contents();
+
+        let users = get_users(&room, &client);
         let users = serde_json::to_string(&users).unwrap();
 
         channel
             .send_json(&serde_json::json!({
                 "method": METHOD,
+                "file": file_path,
+                "contents": contents,
                 "clients": users,
                 "status": "success",
             }))

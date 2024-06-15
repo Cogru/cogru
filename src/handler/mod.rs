@@ -42,7 +42,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "file::update" => file::update::handle(channel, room, &val).await,
         "file::save" => file::save::handle(channel, room, &val).await,
         "file::sync" => file::sync::handle(channel, room, &val).await,
-        "file::users" => file::users::handle(channel, room, &val).await,
+        "file::info" => file::info::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,
         _ => {
             tracing::error!("Unkown method request: {:?}", method);
