@@ -70,7 +70,11 @@ impl Room {
     /// # Arguments
     ///
     /// * `file` - The file path.
-    pub fn peers_by_file(&self, room: &Room, file: &String) -> HashMap<&SocketAddr, &UnboundedSender<String>> {
+    pub fn peers_by_file(
+        &self,
+        room: &Room,
+        file: &String,
+    ) -> HashMap<&SocketAddr, &UnboundedSender<String>> {
         let file = no_room_path(&room, &file);
 
         let mut data = HashMap::new();
@@ -167,9 +171,22 @@ impl Room {
     ///
     /// # Arguments
     ///
+    /// * `SocketAddr` - Socket address to convert to full path.
     /// * `path` - The file path.
-    pub fn get_file_mut(&mut self, path: &String) -> Option<&mut File> {
-        self.files.get_mut(path)
+    pub fn get_file(&self, addr: &SocketAddr, path: &String) -> Option<&File> {
+        let path = to_room_path(addr, self, path);
+        self.files.get(&path)
+    }
+
+    /// Return the file object by file path.
+    ///
+    /// # Arguments
+    ///
+    /// * `SocketAddr` - Socket address to convert to full path.
+    /// * `path` - The file path.
+    pub fn get_file_mut(&mut self, addr: &SocketAddr, path: &String) -> Option<&mut File> {
+        let path = to_room_path(addr, self, path);
+        self.files.get_mut(&path)
     }
 
     /// Return a list of files need to be sync.

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 use crate::chat::*;
+use crate::room::*;
 use crate::user::*;
 use crate::util::*;
 use crop::Rope;
@@ -39,6 +40,11 @@ impl File {
     /// Return the file path.
     pub fn get_path(&self) -> &String {
         &self.path
+    }
+
+    /// Return file path as relative path.
+    pub fn get_relative_path(&self, room: &Room) -> String {
+        no_room_path(room, &self.path)
     }
 
     /// Return chat object.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Addition and Deletion to the file.
+/// Addition and Deletion to the file.
 pub mod update {
     use crate::channel::*;
     use crate::handler::file::*;
@@ -37,8 +37,7 @@ pub mod update {
         let end = data_usize(json, "end").unwrap();
         let contents = data_str(json, "contents").unwrap();
 
-        let path = to_room_path(&addr, &room, &path);
-        let file = room.get_file_mut(&path);
+        let file = room.get_file(&addr, &path);
 
         if file.is_none() {
             tracing::debug!("Updating an non-existence file: {}", path);
@@ -46,9 +45,33 @@ pub mod update {
             return;
         }
 
+        // First get relative path.
+        let relative_file = file.unwrap().get_relative_path(&room);
+
+        let file = room.get_file_mut(&addr, &path);
         let file = file.unwrap();
 
         file.update(&add_or_delete, beg, end, &contents);
+
+        // Get the peers that are in the file.
+        let peers = room.peers_by_file(&room, &relative_file);
+
+        let params = &serde_json::json!({
+            "method": METHOD,
+            "file": relative_file,
+            "add_or_delete": add_or_delete,
+            "beg": beg,
+            "end": end,
+            "contens": contents,
+            "status": "success",
+        });
+
+        for (_addr, _sender) in peers.iter() {
+            if *_addr == addr {
+                continue;
+            }
+            let _ = _sender.send(params.to_string());
+        }
     }
 }
 
@@ -70,8 +93,7 @@ pub mod save {
         let mut room = room.lock().await;
 
         let path = data_str(json, "path").unwrap();
-        let path = to_room_path(&addr, &room, &path);
-        let file = room.get_file_mut(&path);
+        let file = room.get_file_mut(&addr, &path);
 
         if file.is_none() {
             tracing::debug!("Updating an non-existence file: {}", path);
