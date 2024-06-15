@@ -73,20 +73,6 @@ pub fn parse_u64(data: Option<String>) -> Option<u64> {
     data
 }
 
-/// Convert two Option<64> to region tuple.
-///
-/// # Arguments
-///
-/// * `start` - Start region point.
-/// * `end` - End region point.
-pub fn to_region(start: Option<u64>, end: Option<u64>) -> Option<Region> {
-    if start.is_none() || end.is_none() {
-        None
-    } else {
-        Some(Region::new(start, end))
-    }
-}
-
 /// Wrapper to fs::read_to_string
 ///
 /// # Arguments

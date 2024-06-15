@@ -16,27 +16,11 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
-pub struct Region {
-    pub start: Option<u64>,
-    pub end: Option<u64>,
-}
-
-impl Region {
-    pub fn new(_start: Option<u64>, _end: Option<u64>) -> Self {
-        Self {
-            start: _start,
-            end: _end,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct User {
     pub username: String,
     pub path: Option<String>, // the user's location
     pub point: Option<u64>,
-    //pub region: Option<Region>,
-    pub region_start: Option<u64>,
+    pub region_beg: Option<u64>,
     pub region_end: Option<u64>,
 }
 
@@ -46,8 +30,7 @@ impl User {
             username: _username,
             path: None,
             point: None,
-            //region: None,
-            region_start: None,
+            region_beg: None,
             region_end: None,
         }
     }
@@ -56,13 +39,12 @@ impl User {
         &mut self,
         path: Option<String>,
         point: Option<u64>,
-        region_start: Option<u64>,
+        region_beg: Option<u64>,
         region_end: Option<u64>,
     ) {
         self.path = path;
         self.point = point;
-        //self.region = region;
-        self.region_start = region_start;
+        self.region_beg = region_beg;
         self.region_end = region_end;
     }
 }

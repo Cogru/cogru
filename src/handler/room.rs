@@ -292,14 +292,12 @@ pub mod update_client {
 
         let path = data_str(json, "path");
         let point = data_u64(json, "point");
-        let region_start = data_u64(json, "region_start");
+        let region_beg = data_u64(json, "region_beg");
         let region_end = data_u64(json, "region_end");
 
         let user = client.user_mut().unwrap();
 
-        //let region = to_region(region_start, region_end);
-
-        user.update(path, point, region_start, region_end);
+        user.update(path, point, region_beg, region_end);
     }
 }
 
