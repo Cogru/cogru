@@ -16,15 +16,15 @@
 use crate::chat::*;
 use crate::user::*;
 use crate::util::*;
-use jumprope::{JumpRope, JumpRopeBuf};
+use crop::Rope;
 use std::collections::HashMap;
 use std::io::Write;
 
 #[derive(Debug)]
 pub struct File {
-    path: String,              // absolute path
-    chat: Chat,                // messages in this file
-    view: Option<JumpRopeBuf>, // the file view
+    path: String,       // absolute path
+    chat: Chat,         // messages in this file
+    view: Option<Rope>, // the file view
 }
 
 impl File {
@@ -51,7 +51,7 @@ impl File {
             return;
         }
         let content = read_to_string(&self.path);
-        self.view = Some(JumpRopeBuf::from(content));
+        self.view = Some(Rope::from(content));
     }
 
     pub fn update(&mut self, add_or_delete: &String, beg: usize, end: usize, contents: &String) {
@@ -63,7 +63,7 @@ impl File {
                 view.insert(beg, &contents);
             }
             "delete" => {
-                view.remove(beg..end);
+                view.delete(beg..end);
             }
             _ => {
                 unreachable!()
