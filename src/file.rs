@@ -30,13 +30,11 @@ pub struct File {
 
 impl File {
     pub fn new(_path: String) -> Self {
-        let mut new_file = Self {
+        Self {
             path: _path,
             chat: Chat::new(),
             view: None,
-        };
-        new_file.load_file(); // ensure read
-        new_file
+        }
     }
 
     /// Return the file path.
@@ -63,6 +61,7 @@ impl File {
     }
 
     pub fn update(&mut self, add_or_delete: &String, beg: usize, end: usize, contents: &String) {
+        self.load_file();
         let view = self.view.as_mut().unwrap();
 
         match add_or_delete.clone().as_str() {
@@ -79,13 +78,14 @@ impl File {
     }
 
     /// Return the file contents.
-    pub fn contents(&self) -> String {
+    pub fn contents(&mut self) -> String {
+        self.load_file();
         let view = self.view.clone().unwrap();
         view.to_string()
     }
 
     /// Write the content to file.
-    pub fn save(&self) {
+    pub fn save(&mut self) {
         let contents = self.contents();
         let _ = std::fs::write(&self.path, contents);
     }

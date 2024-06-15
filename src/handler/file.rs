@@ -225,9 +225,6 @@ pub mod info {
         let room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
-        //let file = data_str(json, "file").unwrap();
-        //let file = room.get_file(&addr, &file);
-
         if !check_entered(channel, &client, METHOD).await {
             return;
         }
@@ -238,8 +235,6 @@ pub mod info {
         channel
             .send_json(&serde_json::json!({
                 "method": METHOD,
-                //"file": file_path,
-                //"contents": contents,
                 "clients": users,
                 "status": "success",
             }))
