@@ -308,11 +308,29 @@ pub mod update_client {
 pub mod info {
     use crate::channel::*;
     use crate::handler::room::*;
+    use crate::user::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
     const METHOD: &str = "room::info";
+
+    fn get_users(room: &Room, client: &Client) -> Vec<User> {
+        let mut users = Vec::new();
+
+        for client in room.get_clients().iter() {
+            let user = client.user();
+
+            // User not entered yet.
+            if user.is_none() {
+                continue;
+            }
+
+            users.push(user.unwrap().clone());
+        }
+
+        users
+    }
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
@@ -323,14 +341,7 @@ pub mod info {
             return;
         }
 
-        let mut users = Vec::new();
-
-        for client in room.get_clients().iter() {
-            let user = client.user();
-
-            users.push(user.unwrap().clone());
-        }
-
+        let users = get_users(&room, &client);
         let users = serde_json::to_string(&users).unwrap();
 
         channel

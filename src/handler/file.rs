@@ -193,6 +193,7 @@ pub mod info {
         for _client in room.get_clients().iter() {
             let user = _client.user();
 
+            // User not entered yet.
             if user.is_none() {
                 continue;
             }
