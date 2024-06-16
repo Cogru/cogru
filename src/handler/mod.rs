@@ -36,7 +36,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::exit" => room::exit::handle(channel, room, &val).await,
         "room::kick" => room::kick::handle(channel, room, &val).await,
         "room::broadcast" => room::broadcast::handle(channel, room, &val).await,
-        "room::users" => room::users::handle(channel, room, &val).await,
+        "room::info" => room::info::handle(channel, room, &val).await,
         "room::sync" => room::sync::handle(channel, room, &val).await,
         "room::update_client" => room::update_client::handle(channel, room, &val).await,
         "file::update" => file::update::handle(channel, room, &val).await,

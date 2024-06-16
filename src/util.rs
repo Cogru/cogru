@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use crate::client::*;
 use crate::room::*;
 use crate::user::*;
 use path_slash::PathBufExt as _;
@@ -105,6 +106,20 @@ pub fn to_room_path(addr: &SocketAddr, room: &Room, path: &str) -> String {
 pub fn no_room_path(room: &Room, path: &str) -> String {
     let room_path = room.get_path().clone();
     path.replace(&room_path, "")
+}
+
+/// Remove client path.
+///
+/// # Arguments
+///
+/// * `room` - Room object.
+/// * `path` - Path we want to remove room path.
+pub fn no_client_path(client: &Client, path: &Option<String>) -> Option<String> {
+    if path.is_none() {
+        return None;
+    }
+    let path = path.clone().unwrap();
+    Some(path.replace(client.get_path(), ""))
 }
 
 /// Convert backslash to slash.

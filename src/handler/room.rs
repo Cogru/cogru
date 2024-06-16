@@ -291,6 +291,7 @@ pub mod update_client {
         }
 
         let path = data_str(json, "path");
+        let path = no_client_path(&client, &path);
         let point = data_u64(json, "point");
         let region_beg = data_u64(json, "region_beg");
         let region_end = data_u64(json, "region_end");
@@ -301,17 +302,17 @@ pub mod update_client {
     }
 }
 
-/// Room Users
+/// Room Information
 ///
 /// Return a list of users in room.
-pub mod users {
+pub mod info {
     use crate::channel::*;
     use crate::handler::room::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    const METHOD: &str = "room::users";
+    const METHOD: &str = "room::info";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
