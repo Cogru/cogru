@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pub mod error;
 pub mod properties;
 use crate::channel::*;
-use crate::client::*;
 use crate::connection::*;
 use crate::room::*;
 use std::sync::Arc;
 use tokio::net::TcpListener;
-use tokio::sync::broadcast;
 use tokio::sync::Mutex;
 
 pub struct Server {
