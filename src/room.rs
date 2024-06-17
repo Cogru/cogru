@@ -222,7 +222,7 @@ impl Room {
                 continue;
             }
 
-            if _client.user().unwrap().username == *username {
+            if _client.user().unwrap().username() == *username {
                 return true;
             }
         }
@@ -305,9 +305,23 @@ impl Room {
     /// # Arguments
     ///
     /// * `username` - The client username.
-    pub fn get_client_by_name(&mut self, username: &str) -> Option<&mut Client> {
+    pub fn get_client_by_name(&self, username: &str) -> Option<&Client> {
+        for (addr, client) in self.clients.iter() {
+            if client.user().unwrap().username() == username {
+                return Some(client);
+            }
+        }
+        None
+    }
+
+    /// Return the socket address by username.
+    ///
+    /// # Arguments
+    ///
+    /// * `username` - The client username.
+    pub fn get_client_mut_by_name(&mut self, username: &str) -> Option<&mut Client> {
         for (addr, client) in self.clients.iter_mut() {
-            if client.user().unwrap().username == username {
+            if client.user().unwrap().username() == username {
                 return Some(client);
             }
         }
@@ -338,7 +352,7 @@ impl Room {
     ///
     /// * `username` - The client username.
     pub fn kick(&mut self, username: &str) -> (bool, String) {
-        let client = self.get_client_by_name(username);
+        let client = self.get_client_mut_by_name(username);
 
         if client.is_none() {
             return (false, format!("User `{}` not found in the room", username));

@@ -17,11 +17,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct User {
-    pub username: String,
-    pub path: Option<String>, // the user's location
-    pub point: Option<u64>,
-    pub region_beg: Option<u64>,
-    pub region_end: Option<u64>,
+    username: String,
+    path: Option<String>, // the user's location
+    point: Option<u64>,
+    region_beg: Option<u64>,
+    region_end: Option<u64>,
 }
 
 impl User {
@@ -33,6 +33,26 @@ impl User {
             region_beg: None,
             region_end: None,
         }
+    }
+
+    pub fn username(&self) -> String {
+        self.username.clone()
+    }
+
+    pub fn path(&self) -> Option<String> {
+        self.path.clone()
+    }
+
+    pub fn point(&self) -> Option<u64> {
+        self.point
+    }
+
+    pub fn region_beg(&self) -> Option<u64> {
+        self.region_beg
+    }
+
+    pub fn region_end(&self) -> Option<u64> {
+        self.region_end
     }
 
     pub fn update(

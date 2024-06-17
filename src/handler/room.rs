@@ -44,23 +44,6 @@ pub async fn check_entered(channel: &mut Channel, client: &Client, method: &str)
     return false;
 }
 
-/// Ensure the client is entered.
-///
-/// Use this when not re-using client and room variables.
-///
-/// # Arguments
-///
-/// * `channel` - Send error message when not entered.
-/// * `room` - Room use to get the client.
-/// * `method` - The method id.
-pub async fn ensure_entered(channel: &mut Channel, room: &Arc<Mutex<Room>>, method: &str) -> bool {
-    let addr = &channel.get_connection().addr;
-    let mut room = room.lock().await;
-    let client = room.get_client_mut(addr).unwrap();
-
-    check_entered(channel, client, method).await
-}
-
 /// Return true if admin; else false and send the error message to the client.
 ///
 /// # Arguments
@@ -170,7 +153,7 @@ pub mod exit {
         // Leave the room
         client.exit_room();
 
-        let username = client.user().unwrap().username.clone();
+        let username = client.user().unwrap().username();
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,
@@ -206,7 +189,7 @@ pub mod kick {
             return;
         }
 
-        let admin_name = client.user().unwrap().username.clone();
+        let admin_name = client.user().unwrap().username();
         // target user to kick out
         let target_name = data_str(json, "username").unwrap();
 
@@ -253,7 +236,7 @@ pub mod broadcast {
         let room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
-        let username = client.user().unwrap().username.clone();
+        let username = client.user().unwrap().username();
 
         if !check_entered(channel, client, METHOD).await {
             return;
@@ -315,7 +298,7 @@ pub mod info {
 
     const METHOD: &str = "room::info";
 
-    fn get_users(room: &Room, client: &Client) -> Vec<User> {
+    fn get_users(room: &Room) -> Vec<User> {
         let mut users = Vec::new();
 
         for client in room.get_clients().iter() {
@@ -341,7 +324,7 @@ pub mod info {
             return;
         }
 
-        let users = get_users(&room, &client);
+        let users = get_users(&room);
         let users = serde_json::to_string(&users).unwrap();
 
         channel
@@ -397,5 +380,55 @@ pub mod sync {
                 }))
                 .await;
         }
+    }
+}
+
+/// Return user's position.
+pub mod find_user {
+    use crate::channel::*;
+    use crate::handler::room::*;
+    use crate::server::error::*;
+    use crate::util::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "room::find_user";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let room = room.lock().await;
+
+        let username = data_str(json, "username");
+
+        if username.is_none() {
+            missing_field(channel, METHOD, "username").await;
+            return;
+        }
+
+        let username = username.unwrap();
+
+        let client = room.get_client_by_name(&username);
+
+        if client.is_none() {
+            general_error(channel, METHOD, "Client not found in the room").await;
+            return;
+        }
+
+        let client = client.unwrap();
+
+        let user = client.user().unwrap();
+
+        let path = user.path().unwrap();
+        let point = user.point().unwrap();
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": METHOD,
+                "username": username,
+                "file": path,
+                "point": point,
+                "status": "success",
+            }))
+            .await;
     }
 }

@@ -17,12 +17,11 @@ pub mod file;
 pub mod room;
 
 use crate::channel::*;
-use crate::handler::file::*;
-use crate::handler::room::*;
 use crate::room::*;
 use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+
 pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) {
     let v = serde_json::from_str(json);
     let val: Value = v.unwrap();
@@ -39,6 +38,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::info" => room::info::handle(channel, room, &val).await,
         "room::sync" => room::sync::handle(channel, room, &val).await,
         "room::update_client" => room::update_client::handle(channel, room, &val).await,
+        "room::find_user" => room::find_user::handle(channel, room, &val).await,
         "file::update" => file::update::handle(channel, room, &val).await,
         "file::save" => file::save::handle(channel, room, &val).await,
         "file::sync" => file::sync::handle(channel, room, &val).await,
@@ -106,7 +106,6 @@ mod init {
     use crate::client::*;
     use crate::room::*;
     use crate::util::*;
-    use chrono;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -114,7 +113,6 @@ mod init {
     const METHOD: &str = "init";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
 
         let path = data_str(json, "path").unwrap();

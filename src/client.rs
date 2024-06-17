@@ -57,7 +57,7 @@ impl Client {
         if user.is_none() {
             return None;
         }
-        let path = user.unwrap().path;
+        let path = user.unwrap().path();
         if path.is_none() {
             return None;
         }

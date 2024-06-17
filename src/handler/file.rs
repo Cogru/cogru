@@ -17,8 +17,6 @@
 /// Addition and Deletion to the file.
 pub mod update {
     use crate::channel::*;
-    use crate::handler::file::*;
-    use crate::handler::room::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -77,8 +75,6 @@ pub mod update {
 /// Save file.
 pub mod save {
     use crate::channel::*;
-    use crate::handler::file::*;
-    use crate::handler::room::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -121,7 +117,6 @@ pub mod save {
 /// Sync file
 pub mod sync {
     use crate::channel::*;
-    use crate::handler::file::*;
     use crate::handler::room::*;
     use crate::room::*;
     use crate::util::*;
@@ -166,7 +161,6 @@ pub mod info {
     use crate::handler::room::*;
     use crate::room::*;
     use crate::user::*;
-    use crate::util::*;
     use serde_json::Value;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -186,7 +180,7 @@ pub mod info {
         let this_user = client.user().unwrap();
 
         // If user is not in the file, ignore it.
-        if this_user.path.is_none() {
+        if this_user.path().is_none() {
             return users;
         }
 
@@ -206,7 +200,7 @@ pub mod info {
             }
 
             // Ignore when user not visiting any project files.
-            if user.path.is_none() {
+            if user.path().is_none() {
                 continue;
             }
 
@@ -264,7 +258,7 @@ pub mod say {
             return;
         }
 
-        let username = client.user().unwrap().username.clone();
+        let username = client.user().unwrap().username();
 
         let file = data_str(json, "file").unwrap();
         let file = no_room_path(&room, &file);
