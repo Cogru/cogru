@@ -86,8 +86,12 @@ pub mod save {
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
 
-        let path = data_str(json, "path").unwrap();
+        let path = data_str(json, "file");
+        let relative_path = no_client_path(&client, &path);
+
+        let path = path.unwrap();
         let file = room.get_file_mut(&addr, &path);
 
         if file.is_none() {
@@ -100,7 +104,8 @@ pub mod save {
         file.save();
 
         let contents = file.contents();
-        let relative_path = no_room_path(&room, &path);
+
+        let relative_path = relative_path.unwrap();
 
         room.broadcast_json_except(
             &serde_json::json!({
