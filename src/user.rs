@@ -22,6 +22,9 @@ pub struct User {
     point: Option<u64>,
     region_beg: Option<u64>,
     region_end: Option<u64>,
+    // Color definition
+    color_cursor: Option<String>, // hex
+    color_region: Option<String>, // hex
 }
 
 impl User {
@@ -32,6 +35,8 @@ impl User {
             point: None,
             region_beg: None,
             region_end: None,
+            color_cursor: None,
+            color_region: None,
         }
     }
 
@@ -55,16 +60,28 @@ impl User {
         self.region_end
     }
 
+    pub fn color_cursor(&self) -> Option<String> {
+        self.color_cursor.clone()
+    }
+
+    pub fn color_region(&self) -> Option<String> {
+        self.color_region.clone()
+    }
+
     pub fn update(
         &mut self,
         path: Option<String>,
         point: Option<u64>,
         region_beg: Option<u64>,
         region_end: Option<u64>,
+        color_cursor: Option<String>,
+        color_region: Option<String>,
     ) {
         self.path = path;
         self.point = point;
         self.region_beg = region_beg;
         self.region_end = region_end;
+        self.color_cursor = color_cursor;
+        self.color_region = color_region;
     }
 }

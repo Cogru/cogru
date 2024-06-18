@@ -278,10 +278,19 @@ pub mod update_client {
         let point = data_u64(json, "point");
         let region_beg = data_u64(json, "region_beg");
         let region_end = data_u64(json, "region_end");
+        let color_cursor = data_str(json, "color_cursor");
+        let color_region = data_str(json, "color_region");
 
         let user = client.user_mut().unwrap();
 
-        user.update(path, point, region_beg, region_end);
+        user.update(
+            path,
+            point,
+            region_beg,
+            region_end,
+            color_cursor,
+            color_region,
+        );
     }
 }
 
