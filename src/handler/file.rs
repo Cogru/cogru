@@ -285,3 +285,27 @@ pub mod say {
         }
     }
 }
+
+/// Lock the file.
+///
+/// Only user who locked the file and admins can edit the file.
+pub mod lock {
+    use crate::channel::*;
+    use crate::room::*;
+    use crate::util::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "file::lock";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let file = data_str(json, "file");
+
+        if file.is_none() {
+            return;
+        }
+
+        // TODO: ..
+    }
+}
