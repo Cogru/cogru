@@ -377,13 +377,13 @@ pub mod sync {
 
             // Replace the room path to client's project path, so the client
             // can use the path directly.
-            let path = abs_path.replace(&room_path, &project_path);
-            let path = to_slash(&path);
+            let file_path = abs_path.replace(&room_path, &project_path);
+            let file_path = to_slash(&file_path);
 
             channel
                 .send_json(&serde_json::json!({
                     "method": METHOD,
-                    "path": path,
+                    "file": file_path,
                     "contents": contents,
                     "status": "success",
                 }))
