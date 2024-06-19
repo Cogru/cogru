@@ -31,7 +31,7 @@ use tokio::sync::Mutex;
 
 pub struct Channel {
     read_buf: Vec<u8>, // read buffer
-    data: Vec<u8>,            // hold json data
+    data: Vec<u8>,     // hold json data
     connection: Connection,
     rx: UnboundedReceiver<String>,
 }
@@ -164,7 +164,7 @@ impl Channel {
     }
 
     pub async fn disconnect(&self, room: &Arc<Mutex<Room>>) {
-        tracing::trace!("{} disconnected", self.connection.addr);
+        tracing::info!("{} disconnected", self.connection.addr);
 
         let mut room = room.lock().await;
         room.remove_client(&self.connection.addr);
