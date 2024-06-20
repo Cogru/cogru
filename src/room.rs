@@ -136,6 +136,12 @@ impl Room {
         }
     }
 
+    pub fn new_file(&mut self, filename: &String) -> Option<&mut File> {
+        let file = File::new(filename.clone());
+        self.files.insert(filename.clone(), file);
+        self.files.get_mut(&filename.clone())
+    }
+
     /// Sync files in the room
     pub fn sync_files(&mut self) {
         let mut builder = WalkBuilder::new(&self.path);

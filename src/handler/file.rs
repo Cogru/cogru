@@ -120,6 +120,9 @@ pub mod save {
 }
 
 /// Sync file
+///
+/// Replace the client's file with server file; sync file
+/// can make user's lose his work!
 pub mod sync {
     use crate::channel::*;
     use crate::handler::room::*;
