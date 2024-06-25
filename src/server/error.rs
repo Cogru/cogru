@@ -47,3 +47,18 @@ pub async fn missing_field(channel: &mut Channel, method: &str, key: &str) {
     )
     .await;
 }
+
+/// Send obsolete notice.
+///
+/// # Arguments
+///
+/// * `channel` - Send failure message to this channel.
+/// * `method` - The method type.
+pub async fn obsolete_notice(channel: &mut Channel, method: &str) {
+    general_error(
+        channel,
+        method,
+        format!("The method `{}` is obsoleted", method).as_str(),
+    )
+    .await;
+}

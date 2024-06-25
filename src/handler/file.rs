@@ -103,7 +103,7 @@ pub mod save {
         let file = file.unwrap();
         file.save();
 
-        let contents = file.contents();
+        let contents = file.buffer();
 
         let relative_path = relative_path.unwrap();
 
@@ -149,7 +149,54 @@ pub mod sync {
             return;
         }
 
+        // Get file string, not the buffer!
         let contents = read_to_string(&local_path);
+
+        channel
+            .send_json(&serde_json::json!({
+                "method": METHOD,
+                "file": file_path,  // send it back directly
+                "contents": contents,
+                "status": "success",
+            }))
+            .await;
+    }
+}
+
+/// Synce the buffer.
+pub mod sync_buffer {
+    use crate::channel::*;
+    use crate::client::*;
+    use crate::handler::room::*;
+    use crate::room::*;
+    use crate::user::*;
+    use crate::util::*;
+    use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    const METHOD: &str = "file::sync_buffer";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr.clone();
+        let mut room = room.lock().await;
+
+        let client = room.get_client(addr).unwrap();
+
+        // Check entered the room.
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
+
+        let file_path = data_str(json, "file").unwrap();
+
+        let file = room.get_file_mut(addr, &file_path);
+
+        // TODO: Handle `file` is none error.
+
+        let file = file.unwrap();
+
+        let contents = file.buffer();
 
         channel
             .send_json(&serde_json::json!({
