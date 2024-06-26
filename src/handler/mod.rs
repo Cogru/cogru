@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pub mod buffer;
 pub mod file;
 pub mod room;
 
@@ -39,14 +40,14 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "room::sync" => room::sync::handle(channel, room, &val).await,
         "room::update_client" => room::update_client::handle(channel, room, &val).await,
         "room::find_user" => room::find_user::handle(channel, room, &val).await,
-        "file::update" => file::update::handle(channel, room, &val).await,
-        "file::save" => file::save::handle(channel, room, &val).await,
         "file::sync" => file::sync::handle(channel, room, &val).await,
-        "file::sync_buffer" => file::sync_buffer::handle(channel, room, &val).await,
         "file::info" => file::info::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,
+        "buffer::update" => buffer::update::handle(channel, room, &val).await,
+        "buffer::save" => buffer::save::handle(channel, room, &val).await,
+        "buffer::sync" => buffer::sync::handle(channel, room, &val).await,
         _ => {
-            tracing::error!("Unkown method request: {:?}", method);
+            tracing::error!("Unkown method request: `{}`", method);
         }
     }
 }
