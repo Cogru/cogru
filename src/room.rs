@@ -137,10 +137,21 @@ impl Room {
     }
 
     /// Create a new file.
-    pub fn new_file(&mut self, filename: &String) -> Option<&mut File> {
-        let file = File::new(filename.clone());
+    pub fn new_file(&mut self, filename: &String, contents: Option<String>) -> Option<&mut File> {
+        let file = File::new(self, filename.clone(), contents);
         self.files.insert(filename.clone(), file);
         self.files.get_mut(&filename.clone())
+    }
+
+    /// Create a new file from client.
+    pub fn new_file_from_addr(
+        &mut self,
+        addr: &SocketAddr,
+        filename: &String,
+        contents: Option<String>,
+    ) -> Option<&mut File> {
+        let filename = to_room_path(addr, self, filename);
+        self.new_file(&filename, contents)
     }
 
     /// Sync files in the room
@@ -163,7 +174,7 @@ impl Room {
                 let path = to_slash(&path);
 
                 println!("  - Sync file {}", path);
-                self.new_file(&path);
+                self.new_file(&path, None);
             }
         }
     }
@@ -183,32 +194,43 @@ impl Room {
         let path = to_room_path(addr, self, filename);
         self.files.get(&path)
     }
-
-    /// Return the file object by file path.
-    ///
-    /// # Arguments
-    ///
-    /// * `addr` - Socket address to convert to full path.
-    /// * `filename` - The file path.
+    /// Mutable version.
     pub fn get_file_mut(&mut self, addr: &SocketAddr, filename: &String) -> Option<&mut File> {
         let path = to_room_path(addr, self, filename);
         self.files.get_mut(&path)
     }
 
-    pub fn get_file_create(&mut self, addr: &SocketAddr, filename: &String) -> Option<&File> {
+    /// Return the file object by file path; if the file doesn't
+    /// exists; create it.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Socket address to convert to full path.
+    /// * `filename` - The file path.
+    pub fn get_file_create(
+        &mut self,
+        addr: &SocketAddr,
+        filename: &String,
+        contents: Option<String>,
+    ) -> Option<&File> {
         let file = self.get_file(addr, filename);
         // If missing create one!
         if file.is_none() {
-            self.new_file(filename);
+            self.new_file_from_addr(addr, filename, contents);
         }
         self.get_file(addr, filename)
     }
-
-    pub fn get_file_create_mut(&mut self, addr: &SocketAddr, filename: &String) -> Option<&mut File> {
+    /// Mutable version.
+    pub fn get_file_create_mut(
+        &mut self,
+        addr: &SocketAddr,
+        filename: &String,
+        contents: Option<String>,
+    ) -> Option<&mut File> {
         let file = self.get_file_mut(addr, filename);
         // If missing create one!
         if file.is_none() {
-            self.new_file(filename);
+            self.new_file_from_addr(addr, filename, contents);
         }
         self.get_file_mut(addr, filename)
     }

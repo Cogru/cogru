@@ -23,18 +23,33 @@ use std::io::Write;
 
 #[derive(Debug)]
 pub struct File {
-    path: String,       // absolute path
+    path: String,       // absolute path on file system
+    rel_path: String,   // relative path by room path
     chat: Chat,         // messages in this file
     view: Option<Rope>, // the file view
 }
 
 impl File {
-    pub fn new(_path: String) -> Self {
-        Self {
-            path: _path,
+    pub fn new(room: &Room, _path: String, _contents: Option<String>) -> Self {
+        let _view = if _contents.is_none() {
+            None
+        } else {
+            let contents = _contents.clone().unwrap();
+            Some(Rope::from(contents))
+        };
+
+        let mut new_file = Self {
+            path: _path.clone(),
+            rel_path: no_room_path(room, _path.as_str()),
             chat: Chat::new(),
-            view: None,
+            view: _view,
+        };
+        // If contents is valid, meaning we trying to create the file!
+        if !_contents.is_none() {
+            new_file.save(); // Create the file!
         }
+        new_file.load_file();
+        new_file
     }
 
     /// Return the file path.
@@ -43,8 +58,8 @@ impl File {
     }
 
     /// Return file path as relative path.
-    pub fn relative_path(&self, room: &Room) -> String {
-        no_room_path(room, &self.path)
+    pub fn relative_path(&self) -> String {
+        self.rel_path.clone()
     }
 
     /// Return chat object.
@@ -56,12 +71,11 @@ impl File {
         if !self.view.is_none() {
             return;
         }
-        let content = read_to_string(&self.path);
+        let content = self.contents();
         self.view = Some(Rope::from(content));
     }
 
     pub fn update(&mut self, add_or_delete: &String, beg: usize, end: usize, contents: &String) {
-        self.load_file();
         let view = self.view.as_mut().unwrap();
 
         match add_or_delete.clone().as_str() {
@@ -78,8 +92,7 @@ impl File {
     }
 
     /// Return the file view.
-    pub fn buffer(&mut self) -> String {
-        self.load_file();
+    pub fn buffer(&self) -> String {
         let view = self.view.clone().unwrap();
         view.to_string()
     }
@@ -90,7 +103,7 @@ impl File {
     }
 
     /// Write the content to file.
-    pub fn save(&mut self) {
+    pub fn save(&self) {
         let contents = self.buffer();
         let _ = std::fs::write(&self.path, contents);
     }

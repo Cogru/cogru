@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// Addition and Deletion to the file.
+/// Addition and Deletion to the buffer.
 pub mod update {
     use crate::channel::*;
     use crate::room::*;
@@ -35,12 +35,10 @@ pub mod update {
         let end = data_usize(json, "end").unwrap();
         let contents = data_str(json, "contents").unwrap();
 
-        let file = room.get_file(&addr, &path);
-
-        let relative_path = file.unwrap().relative_path(&room);
-
-        let file = room.get_file_mut(&addr, &path);
+        let file = room.get_file_create_mut(&addr, &path, None);
         let file = file.unwrap();
+
+        let relative_path = file.relative_path();
 
         file.update(&add_or_delete, beg, end, &contents);
 
@@ -66,7 +64,7 @@ pub mod update {
     }
 }
 
-/// Save file.
+/// Save buffer to file.
 pub mod save {
     use crate::channel::*;
     use crate::room::*;
@@ -82,19 +80,15 @@ pub mod save {
         let mut room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
-        let path = data_str(json, "file");
-        let relative_path = no_client_path(&client, &path);
+        let filename = data_str(json, "file");
+        let contents = data_str(json, "contents");
+        let relative_path = no_client_path(&client, &filename);
 
-        let path = path.unwrap();
-        let file = room.get_file_mut(&addr, &path);
+        let filename = filename.unwrap();
 
-        if file.is_none() {
-            tracing::debug!("Updating an non-existence file: {}", path);
-            // TODO: Create one?
-            return;
-        }
-
+        let file = room.get_file_create_mut(addr, &filename, contents);
         let file = file.unwrap();
+
         file.save();
 
         let contents = file.buffer();
