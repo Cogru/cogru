@@ -136,6 +136,7 @@ impl Room {
         }
     }
 
+    /// Create a new file.
     pub fn new_file(&mut self, filename: &String) -> Option<&mut File> {
         let file = File::new(filename.clone());
         self.files.insert(filename.clone(), file);
@@ -160,10 +161,9 @@ impl Room {
             if md.is_file() {
                 let path = dent.path().display().to_string();
                 let path = to_slash(&path);
-                println!("  - Sync file {}", path);
 
-                let file = File::new(path.clone());
-                self.files.insert(path, file);
+                println!("  - Sync file {}", path);
+                self.new_file(&path);
             }
         }
     }
@@ -177,10 +177,10 @@ impl Room {
     ///
     /// # Arguments
     ///
-    /// * `SocketAddr` - Socket address to convert to full path.
-    /// * `path` - The file path.
-    pub fn get_file(&self, addr: &SocketAddr, path: &String) -> Option<&File> {
-        let path = to_room_path(addr, self, path);
+    /// * `addr` - Socket address to convert to full path.
+    /// * `filename` - The file path.
+    pub fn get_file(&self, addr: &SocketAddr, filename: &String) -> Option<&File> {
+        let path = to_room_path(addr, self, filename);
         self.files.get(&path)
     }
 
@@ -188,11 +188,29 @@ impl Room {
     ///
     /// # Arguments
     ///
-    /// * `SocketAddr` - Socket address to convert to full path.
-    /// * `path` - The file path.
-    pub fn get_file_mut(&mut self, addr: &SocketAddr, path: &String) -> Option<&mut File> {
-        let path = to_room_path(addr, self, path);
+    /// * `addr` - Socket address to convert to full path.
+    /// * `filename` - The file path.
+    pub fn get_file_mut(&mut self, addr: &SocketAddr, filename: &String) -> Option<&mut File> {
+        let path = to_room_path(addr, self, filename);
         self.files.get_mut(&path)
+    }
+
+    pub fn get_file_create(&mut self, addr: &SocketAddr, filename: &String) -> Option<&File> {
+        let file = self.get_file(addr, filename);
+        // If missing create one!
+        if file.is_none() {
+            self.new_file(filename);
+        }
+        self.get_file(addr, filename)
+    }
+
+    pub fn get_file_create_mut(&mut self, addr: &SocketAddr, filename: &String) -> Option<&mut File> {
+        let file = self.get_file_mut(addr, filename);
+        // If missing create one!
+        if file.is_none() {
+            self.new_file(filename);
+        }
+        self.get_file_mut(addr, filename)
     }
 
     /// Return a list of files need to be sync.

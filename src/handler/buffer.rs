@@ -37,12 +37,6 @@ pub mod update {
 
         let file = room.get_file(&addr, &path);
 
-        if file.is_none() {
-            tracing::debug!("Updating an non-existence file: {}", path);
-            // TODO: Create one?
-            return;
-        }
-
         let relative_path = file.unwrap().relative_path(&room);
 
         let file = room.get_file_mut(&addr, &path);
@@ -146,11 +140,15 @@ pub mod sync {
             return;
         }
 
-        let file_path = data_str(json, "file").unwrap();
+        let filename = data_str(json, "file").unwrap();
 
-        let file = room.get_file_mut(addr, &file_path);
+        let file = room.get_file_mut(addr, &filename);
 
-        // TODO: Handle `file` is none error.
+        if file.is_none() {
+            tracing::debug!("Updating an non-existence file: {}", filename);
+            // TODO: Create one?
+            return;
+        }
 
         let file = file.unwrap();
 
@@ -159,7 +157,7 @@ pub mod sync {
         channel
             .send_json(&serde_json::json!({
                 "method": METHOD,
-                "file": file_path,  // send it back directly
+                "file": filename,  // send it back directly
                 "contents": contents,
                 "status": "success",
             }))

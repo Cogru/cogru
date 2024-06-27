@@ -84,7 +84,7 @@ pub fn read_to_string(path: &String) -> String {
     std::fs::read_to_string(path).expect(format!("Unable to read file: {}", path).as_str())
 }
 
-/// Convert path's absolute project path to this room path.
+/// Convert client's project path to this room path.
 ///
 /// # Arguments
 ///
