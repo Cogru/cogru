@@ -22,3 +22,5 @@ pub const PORT: &str = "8786";
 
 pub const SEPARATOR_LEN: usize = "\r\n".len();
 pub const BUF_SIZE: usize = 1024 * 8; // Default is 8192
+
+pub const USE_LF: &str = "false";

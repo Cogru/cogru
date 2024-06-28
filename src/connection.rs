@@ -13,18 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::handler;
-use crate::room::*;
-use async_recursion::async_recursion;
 use serde_json::Value;
 use std::net::SocketAddr;
-use std::sync::Arc;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
-use tokio::sync::Mutex;
-
-const SEPARATOR_LEN: usize = "\r\n".len();
-const BUF_SIZE: usize = 1024 * 1;
 
 pub struct Connection {
     pub stream: TcpStream,

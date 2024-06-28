@@ -15,13 +15,11 @@
  */
 use crate::chat::*;
 use crate::client::*;
-use crate::connection::*;
 use crate::file::*;
 use crate::server::properties::*;
 use crate::util::*;
 use ignore::WalkBuilder;
 use serde_json::Value;
-use std::collections::hash_map::Keys;
 use std::collections::HashMap;
 use std::fs::metadata;
 use std::net::SocketAddr;
@@ -352,7 +350,7 @@ impl Room {
     ///
     /// * `username` - The client username.
     pub fn get_client_by_name(&self, username: &str) -> Option<&Client> {
-        for (addr, client) in self.clients.iter() {
+        for (_addr, client) in self.clients.iter() {
             if client.user().unwrap().username() == username {
                 return Some(client);
             }
@@ -366,7 +364,7 @@ impl Room {
     ///
     /// * `username` - The client username.
     pub fn get_client_mut_by_name(&mut self, username: &str) -> Option<&mut Client> {
-        for (addr, client) in self.clients.iter_mut() {
+        for (_addr, client) in self.clients.iter_mut() {
             if client.user().unwrap().username() == username {
                 return Some(client);
             }

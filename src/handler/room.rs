@@ -16,8 +16,6 @@
 use crate::channel::*;
 use crate::client::*;
 use crate::room::*;
-use std::sync::Arc;
-use tokio::sync::Mutex;
 
 /// Check if the client has entered the room.
 ///

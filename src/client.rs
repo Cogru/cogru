@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::connection::*;
-use crate::handler;
-use crate::room::*;
 use crate::user::*;
 
 #[derive(PartialEq)]

@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use crate::channel::*;
 use crate::client::*;
 use crate::room::*;
-use crate::user::*;
+use normalize_line_endings::normalized;
 use path_slash::PathBufExt as _;
 use serde_json::Value;
 use std::net::SocketAddr;
@@ -82,6 +81,15 @@ pub fn parse_u64(data: Option<String>) -> Option<u64> {
 /// * `path` - File path to read.
 pub fn read_to_string(path: &String) -> String {
     std::fs::read_to_string(path).expect(format!("Unable to read file: {}", path).as_str())
+}
+
+/// Normalize string's line endings.
+///
+/// # Arguments
+///
+/// * `string` - String to normalize.
+pub fn normalize_le(string: &String) -> String {
+    String::from_iter(normalized(string.chars()))
 }
 
 /// Convert client's project path to this room path.
