@@ -19,6 +19,15 @@ to be entered.
 $ cogru . --no-password
 ```
 
+## 🪵 Client Implementation
+
+- [ ] Emacs ([cogru.el][])
+- [ ] Sublime Text ([[cogru-sublime]][])
+- [ ] Vim
+- [ ] VSCode
+- [ ] Visual Studio
+- [ ] Intellij
+
 ## 📁 Similar Projects
 
 - [floobits][] (abandoned)
@@ -45,6 +54,9 @@ See [`LICENSE`](./LICENSE) for details.
 
 
 <!-- Links -->
+
+[cogru.el]: https://github.com/Cogru/cogru.el
+[cogru-sublime]: https://github.com/Cogru/cogru-sublime
 
 [floobits]: https://floobits.com/
 [tandem]: https://github.com/typeintandem/tandem
