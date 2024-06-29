@@ -6,3 +6,6 @@ Cargo.lock
 
 /.log
 /.cogru
+
+# macOS
+.DS_Store
