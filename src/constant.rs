@@ -24,3 +24,7 @@ pub const SEPARATOR_LEN: usize = "\r\n".len();
 pub const BUF_SIZE: usize = 1024 * 8; // Default is 8192
 
 pub const USE_LF: &str = "false";
+
+/* Status */
+pub const ST_SUCCESS: &str = "success";
+pub const ST_FAILURE: &str = "failure";

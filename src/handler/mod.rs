@@ -106,6 +106,7 @@ mod ping {
 mod init {
     use crate::channel::*;
     use crate::client::*;
+    use crate::constant::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -129,7 +130,7 @@ mod init {
             .send_json(&serde_json::json!({
                 "method": METHOD,
                 "message": format!("Done initialized in [{}]", path),
-                "status": "success",
+                "status": ST_SUCCESS,
             }))
             .await;
     }

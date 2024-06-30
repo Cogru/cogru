@@ -15,7 +15,9 @@
  */
 use crate::channel::*;
 use crate::client::*;
+use crate::constant::*;
 use crate::room::*;
+use crate::server::error::*;
 
 /// Check if the client has entered the room.
 ///
@@ -31,13 +33,7 @@ pub async fn check_entered(channel: &mut Channel, client: &Client, method: &str)
         return true;
     }
 
-    channel
-        .send_json(&serde_json::json!({
-            "method": method,
-            "message": "You haven't entered the room yet",
-            "status": "failure",
-        }))
-        .await;
+    general_error(channel, method, "You haven't entered the room yet").await;
 
     return false;
 }
@@ -54,13 +50,12 @@ pub async fn check_admin(channel: &mut Channel, client: &Client, method: &str) -
         return true;
     }
 
-    channel
-        .send_json(&serde_json::json!({
-            "method": method,
-            "message": "You are not the admin; only admin can operate this action",
-            "status": "failure",
-        }))
-        .await;
+    general_error(
+        channel,
+        method,
+        "You are not the admin; only admin can operate this action",
+    )
+    .await;
 
     return false;
 }
@@ -68,6 +63,7 @@ pub async fn check_admin(channel: &mut Channel, client: &Client, method: &str) -
 /// Enter room
 pub mod enter {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -86,7 +82,7 @@ pub mod enter {
                 .send_json(&serde_json::json!({
                     "method": METHOD,
                     "message": "You have already entered the room",
-                    "status": "failure",
+                    "status": ST_FAILURE,
                 }))
                 .await;
             return;
@@ -108,14 +104,14 @@ pub mod enter {
                 "method": METHOD,
                 "message": format!("{} has entered the room", username),
                 "username": username,
-                "status": "success",
+                "status": ST_SUCCESS,
             }));
         } else {
             channel
                 .send_json(&serde_json::json!({
                     "method": METHOD,
                     "message": message,
-                    "status": "failure",
+                    "status": ST_FAILURE,
                 }))
                 .await;
         }
@@ -125,6 +121,7 @@ pub mod enter {
 /// Enter room
 pub mod exit {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::room::*;
     use serde_json::Value;
     use std::sync::Arc;
@@ -142,22 +139,23 @@ pub mod exit {
                 .send_json(&serde_json::json!({
                     "method": METHOD,
                     "message": "You never entered the room; do nothing",
-                    "status": "failure",
+                    "status": ST_FAILURE,
                 }))
                 .await;
             return;
         }
 
+        let user = client.user();
+        let username = user.unwrap().username();
+
         // Leave the room
         client.exit_room();
-
-        let username = client.user().unwrap().username();
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,
             "message": format!("{} has left the room", username),
             "username": username,
-            "status": "success",
+            "status": ST_SUCCESS,
         }));
     }
 }
@@ -165,6 +163,7 @@ pub mod exit {
 /// Kcik the user out of the room.
 pub mod kick {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -200,7 +199,7 @@ pub mod kick {
                 "username": target_name,
                 "admin": admin_name,
                 "message": format!("{} has been kicked out by {}", target_name, admin_name),
-                "status": "success",
+                "status": ST_SUCCESS,
             }));
             return;
         }
@@ -210,7 +209,7 @@ pub mod kick {
                 "method": METHOD,
                 "username": target_name,
                 "message": message,
-                "status": "failure",
+                "status": ST_FAILURE,
             }))
             .await;
     }
@@ -221,6 +220,7 @@ pub mod kick {
 /// This message goes across the project.
 pub mod broadcast {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -246,7 +246,7 @@ pub mod broadcast {
             "method": METHOD,
             "username": username,
             "message": message,
-            "status": "success",
+            "status": ST_SUCCESS,
         }));
     }
 }
@@ -260,7 +260,7 @@ pub mod update_client {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
-    const METHOD: &str = "room::update";
+    const METHOD: &str = "room::update_client";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
@@ -297,6 +297,7 @@ pub mod update_client {
 /// Return a list of users in room.
 pub mod info {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::user::*;
     use serde_json::Value;
@@ -338,7 +339,7 @@ pub mod info {
             .send_json(&serde_json::json!({
                 "method": METHOD,
                 "clients": users,
-                "status": "success",
+                "status": ST_SUCCESS,
             }))
             .await;
     }
@@ -347,6 +348,7 @@ pub mod info {
 /// Sync the entire room.
 pub mod sync {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -383,7 +385,7 @@ pub mod sync {
                     "method": METHOD,
                     "file": file_path,
                     "contents": contents,
-                    "status": "success",
+                    "status": ST_SUCCESS,
                 }))
                 .await;
         }
@@ -393,6 +395,7 @@ pub mod sync {
 /// Return user's position.
 pub mod find_user {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::server::error::*;
     use crate::util::*;
@@ -434,7 +437,7 @@ pub mod find_user {
                 "username": username,
                 "file": path,
                 "point": point,
-                "status": "success",
+                "status": ST_SUCCESS,
             }))
             .await;
     }

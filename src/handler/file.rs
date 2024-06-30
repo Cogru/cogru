@@ -20,6 +20,7 @@
 /// can make user's lose his work!
 pub mod sync {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::room::*;
     use crate::util::*;
@@ -52,7 +53,7 @@ pub mod sync {
                 "method": METHOD,
                 "file": file_path,  // send it back directly
                 "contents": contents,
-                "status": "success",
+                "status": ST_SUCCESS,
             }))
             .await;
     }
@@ -62,6 +63,7 @@ pub mod sync {
 pub mod info {
     use crate::channel::*;
     use crate::client::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::room::*;
     use crate::user::*;
@@ -135,7 +137,7 @@ pub mod info {
             .send_json(&serde_json::json!({
                 "method": METHOD,
                 "clients": users,
-                "status": "success",
+                "status": ST_SUCCESS,
             }))
             .await;
     }
@@ -144,6 +146,7 @@ pub mod info {
 /// Say
 pub mod say {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::room::*;
     use crate::util::*;
@@ -176,7 +179,7 @@ pub mod say {
             "username": username,  // Who speak this message?
             "file": file,
             "message": message,
-            "status": "success",
+            "status": ST_SUCCESS,
         });
 
         for (_addr, _sender) in peers.iter() {
@@ -190,6 +193,7 @@ pub mod say {
 /// Only user who locked the file and admins can edit the file.
 pub mod lock {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;

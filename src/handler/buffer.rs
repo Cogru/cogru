@@ -17,6 +17,7 @@
 /// Addition and Deletion to the buffer.
 pub mod update {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -52,7 +53,7 @@ pub mod update {
             "beg": beg,
             "end": end,
             "contents": contents,
-            "status": "success",
+            "status": ST_SUCCESS,
         });
 
         for (_addr, _sender) in peers.iter() {
@@ -67,6 +68,7 @@ pub mod update {
 /// Save buffer to file.
 pub mod save {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;
@@ -100,7 +102,7 @@ pub mod save {
                 "method": METHOD,
                 "file": relative_path,
                 "contents": contents,
-                "status": "success",
+                "status": ST_SUCCESS,
             }),
             addr,
         );
@@ -113,6 +115,7 @@ pub mod save {
 pub mod sync {
     use crate::channel::*;
     use crate::client::*;
+    use crate::constant::*;
     use crate::handler::room::*;
     use crate::room::*;
     use crate::user::*;
@@ -153,7 +156,7 @@ pub mod sync {
                 "method": METHOD,
                 "file": filename,  // send it back directly
                 "contents": contents,
-                "status": "success",
+                "status": ST_SUCCESS,
             }))
             .await;
     }
@@ -164,6 +167,7 @@ pub mod sync {
 /// Only user who locked the file and admins can edit the file.
 pub mod lock {
     use crate::channel::*;
+    use crate::constant::*;
     use crate::room::*;
     use crate::util::*;
     use serde_json::Value;

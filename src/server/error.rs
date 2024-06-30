@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 use crate::channel::*;
+use crate::constant::*;
 
 /// Send general error.
 ///
@@ -26,8 +27,8 @@ pub async fn general_error(channel: &mut Channel, method: &str, msg: &str) {
     channel
         .send_json(&serde_json::json!({
             "method": method,
-            "messag": msg,
-            "status": "failure",
+            "messag": format!("⛔ {}", msg),
+            "status": ST_FAILURE,
         }))
         .await;
 }
@@ -43,7 +44,7 @@ pub async fn missing_field(channel: &mut Channel, method: &str, key: &str) {
     general_error(
         channel,
         method,
-        format!("Required filed `{}` cannot be null", key).as_str(),
+        format!("⚠️ Required filed `{}` cannot be null", key).as_str(),
     )
     .await;
 }
@@ -58,7 +59,7 @@ pub async fn obsolete_notice(channel: &mut Channel, method: &str) {
     general_error(
         channel,
         method,
-        format!("The method `{}` is obsoleted", method).as_str(),
+        format!("📜 The method `{}` is obsoleted", method).as_str(),
     )
     .await;
 }
