@@ -65,50 +65,6 @@ pub mod update {
     }
 }
 
-/// Save buffer to file.
-pub mod save {
-    use crate::channel::*;
-    use crate::constant::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
-
-    const METHOD: &str = "buffer::save";
-
-    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
-        let mut room = room.lock().await;
-        let client = room.get_client(addr).unwrap();
-
-        let filename = data_str(json, "file");
-        let contents = data_str(json, "contents");
-        let relative_path = no_client_path(&client, &filename);
-
-        let filename = filename.unwrap();
-
-        let file = room.get_file_create_mut(addr, &filename, contents);
-        let file = file.unwrap();
-
-        file.save();
-
-        let contents = file.buffer();
-
-        let relative_path = relative_path.unwrap();
-
-        room.broadcast_json_except(
-            &serde_json::json!({
-                "method": METHOD,
-                "file": relative_path,
-                "contents": contents,
-                "status": ST_SUCCESS,
-            }),
-            addr,
-        );
-    }
-}
-
 /// Synce the buffer.
 ///
 /// This will only sync the view.

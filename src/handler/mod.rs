@@ -34,6 +34,9 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "ping" => ping::handle(channel, room, &val).await,
         "room::enter" => room::enter::handle(channel, room, &val).await,
         "room::exit" => room::exit::handle(channel, room, &val).await,
+        "room::add_file" => room::add_file::handle(channel, room, &val).await,
+        "room::delete_file" => room::delete_file::handle(channel, room, &val).await,
+        "room::rename_file" => room::rename_file::handle(channel, room, &val).await,
         "room::kick" => room::kick::handle(channel, room, &val).await,
         "room::broadcast" => room::broadcast::handle(channel, room, &val).await,
         "room::info" => room::info::handle(channel, room, &val).await,
@@ -44,7 +47,6 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "file::info" => file::info::handle(channel, room, &val).await,
         "file::say" => file::say::handle(channel, room, &val).await,
         "buffer::update" => buffer::update::handle(channel, room, &val).await,
-        "buffer::save" => buffer::save::handle(channel, room, &val).await,
         "buffer::sync" => buffer::sync::handle(channel, room, &val).await,
         _ => {
             tracing::error!("Unkown method request: `{}`", method);
