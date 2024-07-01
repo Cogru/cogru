@@ -16,12 +16,16 @@
 pub mod buffer;
 pub mod file;
 pub mod room;
+pub mod util;
 
-use crate::channel::*;
-use crate::room::*;
-use serde_json::Value;
-use std::sync::Arc;
-use tokio::sync::Mutex;
+pub use crate::channel::*;
+pub use crate::client::*;
+pub use crate::constant::*;
+pub use crate::room::*;
+pub use crate::util::*;
+pub use serde_json::Value;
+pub use std::sync::Arc;
+pub use tokio::sync::Mutex;
 
 pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) {
     let v = serde_json::from_str(json);
@@ -56,11 +60,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
 
 /// Test
 mod test {
-    use crate::channel::*;
-    use crate::room::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::*;
 
     const METHOD: &str = "test";
 
@@ -85,12 +85,8 @@ mod test {
 
 /// Ping pong
 mod ping {
-    use crate::channel::*;
-    use crate::room::*;
+    use crate::handler::*;
     use chrono;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
 
     const METHOD: &str = "pong";
 
@@ -106,14 +102,7 @@ mod ping {
 
 /// Initialize for client that has first connected.
 mod init {
-    use crate::channel::*;
-    use crate::client::*;
-    use crate::constant::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::*;
 
     const METHOD: &str = "init";
 

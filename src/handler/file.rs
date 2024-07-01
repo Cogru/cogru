@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pub use crate::channel::*;
+pub use crate::constant::*;
+pub use crate::handler::room::*;
+pub use crate::room::*;
+pub use crate::user::*;
+pub use crate::util::*;
+pub use serde_json::Value;
+pub use std::sync::Arc;
+pub use tokio::sync::Mutex;
 
 /// Sync file
 ///
 /// Replace the client's file with server file; sync file
 /// can make user's lose his work!
 pub mod sync {
-    use crate::channel::*;
-    use crate::constant::*;
-    use crate::handler::room::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::file::*;
 
     const METHOD: &str = "file::sync";
 
@@ -61,15 +63,7 @@ pub mod sync {
 
 /// Return a list of users in the file.
 pub mod info {
-    use crate::channel::*;
-    use crate::client::*;
-    use crate::constant::*;
-    use crate::handler::room::*;
-    use crate::room::*;
-    use crate::user::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::file::*;
 
     const METHOD: &str = "file::info";
 
@@ -145,14 +139,7 @@ pub mod info {
 
 /// Say
 pub mod say {
-    use crate::channel::*;
-    use crate::constant::*;
-    use crate::handler::room::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::file::*;
 
     const METHOD: &str = "file::say";
 
@@ -192,13 +179,7 @@ pub mod say {
 ///
 /// Only user who locked the file and admins can edit the file.
 pub mod lock {
-    use crate::channel::*;
-    use crate::constant::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::file::*;
 
     const METHOD: &str = "file::lock";
 

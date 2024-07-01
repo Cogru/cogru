@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pub use crate::handler::room::*;
 
 /// Addition and Deletion to the buffer.
 pub mod update {
-    use crate::channel::*;
-    use crate::constant::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::buffer::*;
 
     const METHOD: &str = "buffer::update";
 
@@ -69,16 +64,7 @@ pub mod update {
 ///
 /// This will only sync the view.
 pub mod sync {
-    use crate::channel::*;
-    use crate::client::*;
-    use crate::constant::*;
-    use crate::handler::room::*;
-    use crate::room::*;
-    use crate::user::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::buffer::*;
 
     const METHOD: &str = "buffer::sync";
 
@@ -122,13 +108,7 @@ pub mod sync {
 ///
 /// Only user who locked the file and admins can edit the file.
 pub mod lock {
-    use crate::channel::*;
-    use crate::constant::*;
-    use crate::room::*;
-    use crate::util::*;
-    use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use crate::handler::buffer::*;
 
     const METHOD: &str = "buffer::lock";
 
