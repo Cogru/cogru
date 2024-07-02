@@ -21,6 +21,7 @@ use crate::util::*;
 use ignore::WalkBuilder;
 use serde_json::Value;
 use std::collections::HashMap;
+use std::fs;
 use std::fs::metadata;
 use std::net::SocketAddr;
 use std::path::Path;
@@ -188,6 +189,8 @@ impl Room {
     ///
     /// * `filename` - The target file path.
     pub fn delete_file(&mut self, filename: &String) -> Option<File> {
+        fs::remove_file(filename)
+            .expect(format!("⛔ Unable to delete file: {}", filename).as_str());
         self.files.remove(filename)
     }
 
@@ -205,6 +208,8 @@ impl Room {
         if let Some(v) = self.files.remove(filename) {
             self.files.insert(newname.to_string(), v);
         }
+        fs::rename(filename, newname)
+            .expect(format!("⛔ Unable to rename file: {}", filename).as_str());
         self.files.get(newname)
     }
 

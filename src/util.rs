@@ -78,9 +78,10 @@ pub fn parse_u64(data: Option<String>) -> Option<u64> {
 ///
 /// # Arguments
 ///
-/// * `path` - File path to read.
-pub fn read_to_string(path: &String) -> String {
-    std::fs::read_to_string(path).expect(format!("Unable to read file: {}", path).as_str())
+/// * `filename` - File path to read.
+pub fn read_to_string(filename: &String) -> String {
+    std::fs::read_to_string(filename)
+        .expect(format!("⛔ Unable to read the file: {}", filename).as_str())
 }
 
 /// Normalize string's line endings.

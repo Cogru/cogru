@@ -192,7 +192,9 @@ pub mod delete_file {
 
         let filename = filename.unwrap();
 
-        let file = room.delete_file(&filename);
+        let abs_filename = to_room_path(&addr, &room, &filename);
+
+        let file = room.delete_file(&abs_filename);
 
         // Failed to delete file.
         if file.is_none() {
@@ -255,13 +257,10 @@ pub mod rename_file {
         let filename = filename.unwrap();
         let newname = newname.unwrap();
 
-        let file = room.rename_file(&filename, &newname);
+        let abs_filename = to_room_path(&addr, &room, &filename);
+        let abs_newname = to_room_path(&addr, &room, &newname);
 
-        let rel_filename = rel_filename.unwrap();
-        let rel_newname = rel_newname.unwrap();
-
-        println!("file: {}", rel_filename);
-        println!("rel_newname: {}", rel_newname);
+        let file = room.rename_file(&abs_filename, &abs_newname);
 
         // Failed to rename file.
         if file.is_none() {
@@ -273,6 +272,9 @@ pub mod rename_file {
             .await;
             return;
         }
+
+        let rel_filename = rel_filename.unwrap();
+        let rel_newname = rel_newname.unwrap();
 
         room.broadcast_json_except(
             &serde_json::json!({
