@@ -34,16 +34,16 @@ pub mod update {
         let file = room.get_file_create_mut(&addr, &path, None);
         let file = file.unwrap();
 
-        let relative_path = file.relative_path();
+        let rel_file = file.relative_path();
 
         file.update(&add_or_delete, beg, end, &contents);
 
         // Get the peers that are in the file.
-        let peers = room.peers_by_file(&room, &relative_path);
+        let peers = room.peers_by_file(&room, &rel_file);
 
         let params = &serde_json::json!({
             "method": METHOD,
-            "file": relative_path,
+            "file": rel_file,
             "add_or_delete": add_or_delete,
             "beg": beg,
             "end": end,
