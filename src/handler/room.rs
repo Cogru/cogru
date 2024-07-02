@@ -131,7 +131,18 @@ pub mod add_file {
 
         let filename = data_str(json, "file");
         let contents = data_str(json, "contents");
-        let relative_path = no_client_path(&client, &filename);
+
+        if filename.is_none() {
+            missing_field(channel, METHOD, "file").await;
+            return;
+        }
+
+        if contents.is_none() {
+            missing_field(channel, METHOD, "contents").await;
+            return;
+        }
+
+        let rel_filename = no_client_path(&client, &filename);
 
         let filename = filename.unwrap();
 
@@ -142,12 +153,10 @@ pub mod add_file {
 
         let contents = file.buffer();
 
-        let relative_path = relative_path.unwrap();
-
         room.broadcast_json_except(
             &serde_json::json!({
                 "method": METHOD,
-                "file": relative_path,
+                "file": rel_filename.unwrap(),
                 "contents": contents,
                 "status": ST_SUCCESS,
             }),
@@ -172,7 +181,13 @@ pub mod delete_file {
         }
 
         let filename = data_str(json, "file");
-        let relative_path = no_client_path(&client, &filename);
+
+        if filename.is_none() {
+            missing_field(channel, METHOD, "file").await;
+            return;
+        }
+
+        let rel_filename = no_client_path(&client, &filename);
 
         let filename = filename.unwrap();
 
@@ -191,7 +206,7 @@ pub mod delete_file {
 
         room.broadcast_json(&serde_json::json!({
             "method": METHOD,
-            "file": relative_path,
+            "file": rel_filename.unwrap(),
             "status": ST_SUCCESS,
         }));
     }
