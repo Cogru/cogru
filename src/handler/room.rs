@@ -172,7 +172,7 @@ pub mod delete_file {
     const METHOD: &str = "room::delete_file";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
+        let addr = &channel.get_connection().addr.clone();
         let mut room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
@@ -204,11 +204,14 @@ pub mod delete_file {
             return;
         }
 
-        room.broadcast_json(&serde_json::json!({
-            "method": METHOD,
-            "file": rel_filename.unwrap(),
-            "status": ST_SUCCESS,
-        }));
+        room.broadcast_json_except(
+            &serde_json::json!({
+                "method": METHOD,
+                "file": rel_filename.unwrap(),
+                "status": ST_SUCCESS,
+            }),
+            addr,
+        );
     }
 }
 
@@ -219,7 +222,7 @@ pub mod rename_file {
     const METHOD: &str = "room::rename_file";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
+        let addr = &channel.get_connection().addr.clone();
         let mut room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
@@ -262,12 +265,15 @@ pub mod rename_file {
             return;
         }
 
-        room.broadcast_json(&serde_json::json!({
-            "method": METHOD,
-            "file": rel_filename.unwrap(),
-            "newname": rel_newname.unwrap(),
-            "status": ST_SUCCESS,
-        }));
+        room.broadcast_json_except(
+            &serde_json::json!({
+                "method": METHOD,
+                "file": rel_filename.unwrap(),
+                "newname": rel_newname.unwrap(),
+                "status": ST_SUCCESS,
+            }),
+            addr,
+        );
     }
 }
 
