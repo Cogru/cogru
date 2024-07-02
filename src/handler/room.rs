@@ -151,12 +151,13 @@ pub mod add_file {
 
         file.save();
 
+        let rel_filename = rel_filename.unwrap();
         let contents = file.buffer();
 
         room.broadcast_json_except(
             &serde_json::json!({
                 "method": METHOD,
-                "file": rel_filename.unwrap(),
+                "file": rel_filename,
                 "contents": contents,
                 "status": ST_SUCCESS,
             }),
@@ -204,10 +205,12 @@ pub mod delete_file {
             return;
         }
 
+        let rel_filename = rel_filename.unwrap();
+
         room.broadcast_json_except(
             &serde_json::json!({
                 "method": METHOD,
-                "file": rel_filename.unwrap(),
+                "file": rel_filename,
                 "status": ST_SUCCESS,
             }),
             addr,
@@ -254,6 +257,12 @@ pub mod rename_file {
 
         let file = room.rename_file(&filename, &newname);
 
+        let rel_filename = rel_filename.unwrap();
+        let rel_newname = rel_newname.unwrap();
+
+        println!("file: {}", rel_filename);
+        println!("rel_newname: {}", rel_newname);
+
         // Failed to rename file.
         if file.is_none() {
             general_error(
@@ -268,8 +277,8 @@ pub mod rename_file {
         room.broadcast_json_except(
             &serde_json::json!({
                 "method": METHOD,
-                "file": rel_filename.unwrap(),
-                "newname": rel_newname.unwrap(),
+                "file": rel_filename,
+                "newname": rel_newname,
                 "status": ST_SUCCESS,
             }),
             addr,

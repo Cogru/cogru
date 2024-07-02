@@ -27,7 +27,7 @@ pub async fn general_error(channel: &mut Channel, method: &str, msg: &str) {
     channel
         .send_json(&serde_json::json!({
             "method": method,
-            "messag": format!("⛔ {}", msg),
+            "message": format!("⛔ {}", msg),
             "status": ST_FAILURE,
         }))
         .await;
