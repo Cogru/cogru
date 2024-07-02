@@ -134,22 +134,9 @@ impl Room {
         }
     }
 
-    /// Create a new file.
-    pub fn new_file(&mut self, filename: &String, contents: Option<String>) -> Option<&mut File> {
-        let file = File::new(self, filename.clone(), contents);
-        self.files.insert(filename.clone(), file);
-        self.files.get_mut(&filename.clone())
-    }
-
-    /// Create a new file from client.
-    pub fn new_file_from_addr(
-        &mut self,
-        addr: &SocketAddr,
-        filename: &String,
-        contents: Option<String>,
-    ) -> Option<&mut File> {
-        let filename = to_room_path(addr, self, filename);
-        self.new_file(&filename, contents)
+    /// Return the project path.
+    pub fn get_path(&self) -> &String {
+        &self.path
     }
 
     /// Sync files in the room
@@ -177,9 +164,48 @@ impl Room {
         }
     }
 
-    /// Return the project path.
-    pub fn get_path(&self) -> &String {
-        &self.path
+    /// Create a new file.
+    pub fn new_file(&mut self, filename: &String, contents: Option<String>) -> Option<&mut File> {
+        let file = File::new(self, filename.clone(), contents);
+        self.files.insert(filename.clone(), file);
+        self.files.get_mut(&filename.clone())
+    }
+
+    /// Create a new file from client.
+    pub fn new_file_from_addr(
+        &mut self,
+        addr: &SocketAddr,
+        filename: &String,
+        contents: Option<String>,
+    ) -> Option<&mut File> {
+        let filename = to_room_path(addr, self, filename);
+        self.new_file(&filename, contents)
+    }
+
+    /// Delete the file from room, then return it.
+    ///
+    /// # Arguments
+    ///
+    /// * `filename` - The target file path.
+    pub fn delete_file(&mut self, filename: &String) -> Option<File> {
+        self.files.remove(filename)
+    }
+
+    /// Rename the file from room, then return it.
+    ///
+    /// # Arguments
+    ///
+    /// * `filename` - The target file path.
+    /// * `newname` - The new file name.
+    pub fn rename_file(&mut self, filename: &String, newname: &String) -> Option<&File> {
+        let file = self.files.get(filename);
+        if file.is_none() {
+            return None;
+        }
+        if let Some(v) = self.files.remove(filename) {
+            self.files.insert(newname.to_string(), v);
+        }
+        self.files.get(newname)
     }
 
     /// Return the file object by file path.

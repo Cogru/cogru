@@ -121,9 +121,13 @@ pub mod add_file {
     const METHOD: &str = "room::add_file";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
+        let addr = &channel.get_connection().addr.clone();
         let mut room = room.lock().await;
         let client = room.get_client(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
 
         let filename = data_str(json, "file");
         let contents = data_str(json, "contents");
@@ -166,6 +170,30 @@ pub mod delete_file {
         if !check_entered(channel, client, METHOD).await {
             return;
         }
+
+        let filename = data_str(json, "file");
+        let relative_path = no_client_path(&client, &filename);
+
+        let filename = filename.unwrap();
+
+        let file = room.delete_file(&filename);
+
+        // Failed to delete file.
+        if file.is_none() {
+            general_error(
+                channel,
+                METHOD,
+                format!("Fail to delete file, doesn't exists: {}", filename).as_str(),
+            )
+            .await;
+            return;
+        }
+
+        room.broadcast_json(&serde_json::json!({
+            "method": METHOD,
+            "file": relative_path,
+            "status": ST_SUCCESS,
+        }));
     }
 }
 
@@ -176,7 +204,55 @@ pub mod rename_file {
     const METHOD: &str = "room::rename_file";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        // TODO: ..
+        let addr = &channel.get_connection().addr;
+        let mut room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
+
+        let filename = data_str(json, "file");
+        let newname = data_str(json, "newname");
+
+        let rel_filename = no_client_path(&client, &filename);
+        let rel_newname = no_client_path(&client, &newname);
+
+        if filename.is_none() {
+            missing_field(channel, METHOD, "file").await;
+            return;
+        }
+
+        if newname.is_none() {
+            missing_field(channel, METHOD, "newname").await;
+            return;
+        }
+
+        let rel_filename = no_client_path(&client, &filename);
+        let rel_newname = no_client_path(&client, &newname);
+
+        let filename = filename.unwrap();
+        let newname = newname.unwrap();
+
+        let file = room.rename_file(&filename, &newname);
+
+        // Failed to rename file.
+        if file.is_none() {
+            general_error(
+                channel,
+                METHOD,
+                format!("Fail to rename file, doesn't exists: {}", filename).as_str(),
+            )
+            .await;
+            return;
+        }
+
+        room.broadcast_json(&serde_json::json!({
+            "method": METHOD,
+            "file": rel_filename.unwrap(),
+            "newname": rel_newname.unwrap(),
+            "status": ST_SUCCESS,
+        }));
     }
 }
 
