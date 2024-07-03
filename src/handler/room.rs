@@ -146,6 +146,16 @@ pub mod add_file {
 
         let filename = filename.unwrap();
 
+        if rel_filename.is_none() {
+            general_error(
+                channel,
+                METHOD,
+                format!("The file is not under the project path: {}", filename),
+            )
+            .await;
+            return;
+        }
+
         // If already exists, return it.
         {
             let file = room.get_file(addr, &filename);
@@ -211,7 +221,7 @@ pub mod delete_file {
             general_error(
                 channel,
                 METHOD,
-                format!("Fail to delete file, doesn't exists: {}", filename).as_str(),
+                format!("Fail to delete file, doesn't exists: {}", filename),
             )
             .await;
             return;
@@ -277,7 +287,7 @@ pub mod rename_file {
             general_error(
                 channel,
                 METHOD,
-                format!("Fail to rename file, doesn't exists: {}", filename).as_str(),
+                format!("Fail to rename file, doesn't exists: {}", filename),
             )
             .await;
             return;

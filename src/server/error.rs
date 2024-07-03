@@ -23,7 +23,8 @@ use crate::constant::*;
 /// * `channel` - Send failure message to this channel.
 /// * `method` - The method type.
 /// * `key` - The missing field is the JSON key.
-pub async fn general_error(channel: &mut Channel, method: &str, msg: &str) {
+pub async fn general_error<S: AsRef<str>>(channel: &mut Channel, method: &str, msg: S) {
+    let msg = msg.as_ref();
     channel
         .send_json(&serde_json::json!({
             "method": method,
@@ -44,7 +45,7 @@ pub async fn missing_field(channel: &mut Channel, method: &str, key: &str) {
     general_error(
         channel,
         method,
-        format!("⚠️ Required filed `{}` cannot be null", key).as_str(),
+        format!("⚠ Required filed `{}` cannot be null", key),
     )
     .await;
 }
@@ -59,7 +60,7 @@ pub async fn obsolete_notice(channel: &mut Channel, method: &str) {
     general_error(
         channel,
         method,
-        format!("📜 The method `{}` is obsoleted", method).as_str(),
+        format!("📜 The method `{}` is obsoleted", method),
     )
     .await;
 }

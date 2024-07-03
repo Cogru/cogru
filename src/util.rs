@@ -118,6 +118,23 @@ pub fn no_room_path(room: &Room, path: &str) -> String {
     path.replace(&room_path, "")
 }
 
+/// Return true if path is under the client's path.
+///
+/// # Arguments
+///
+/// * `client` - Client used to get it's project path.
+/// * `path` - The path used to check if it's under.
+fn under_client_path(client: &Client, path: &Option<String>) -> bool {
+    if path.is_none() {
+        return false;
+    }
+
+    let path = path.clone().unwrap();
+    let client_path = client.get_path();
+
+    path.starts_with(client_path)
+}
+
 /// Remove client path.
 ///
 /// # Arguments
@@ -125,7 +142,7 @@ pub fn no_room_path(room: &Room, path: &str) -> String {
 /// * `room` - Room object.
 /// * `path` - Path we want to remove room path.
 pub fn no_client_path(client: &Client, path: &Option<String>) -> Option<String> {
-    if path.is_none() {
+    if !under_client_path(client, path) {
         return None;
     }
     let path = path.clone().unwrap();
