@@ -146,6 +146,16 @@ pub mod add_file {
 
         let filename = filename.unwrap();
 
+        // If already exists, return it.
+        {
+            let file = room.get_file(addr, &filename);
+
+            if !file.is_none() {
+                return;
+            }
+        }
+
+        // Create it!
         let file = room.get_file_create_mut(addr, &filename, contents);
         let file = file.unwrap();
 
