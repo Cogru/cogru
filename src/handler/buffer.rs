@@ -79,7 +79,14 @@ pub mod sync {
             return;
         }
 
-        let filename = data_str(json, "file").unwrap();
+        let filename = data_str(json, "file");
+
+        if filename.is_none() {
+            missing_field(channel, METHOD, "file").await;
+            return;
+        }
+
+        let filename = filename.unwrap();
 
         let file = room.get_file_mut(addr, &filename);
 
