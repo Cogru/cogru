@@ -60,6 +60,68 @@ pub mod update {
     }
 }
 
+/// Save the buffer.
+pub mod save {
+    use crate::handler::buffer::*;
+
+    const METHOD: &str = "buffer::save";
+
+    pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
+        let addr = &channel.get_connection().addr.clone();
+        let mut room = room.lock().await;
+        let client = room.get_client(addr).unwrap();
+
+        if !check_entered(channel, client, METHOD).await {
+            return;
+        }
+
+        let filename = data_str(json, "file");
+        let contents = data_str(json, "contents");
+
+        if filename.is_none() {
+            missing_field(channel, METHOD, "file").await;
+            return;
+        }
+
+        if contents.is_none() {
+            missing_field(channel, METHOD, "contents").await;
+            return;
+        }
+
+        let rel_filename = no_client_path(&client, &filename);
+
+        let filename = filename.unwrap();
+
+        if rel_filename.is_none() {
+            general_error(
+                channel,
+                METHOD,
+                format!("The file is not under the project path: {}", filename),
+            )
+            .await;
+            return;
+        }
+
+        let file = room.get_file_create_mut(addr, &filename, contents);
+        let file = file.unwrap();
+
+        file.save();
+
+        let rel_filename = rel_filename.unwrap();
+        let contents = file.buffer();
+
+        room.broadcast_json_except(
+            &serde_json::json!({
+                "method": METHOD,
+                "file": rel_filename,
+                "contents": contents,
+                "status": ST_SUCCESS,
+            }),
+            addr,
+        );
+    }
+}
+
 /// Synce the buffer.
 ///
 /// This will only sync the view.

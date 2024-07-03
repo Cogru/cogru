@@ -52,6 +52,7 @@ pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &str) 
         "file::say" => file::say::handle(channel, room, &val).await,
         "buffer::update" => buffer::update::handle(channel, room, &val).await,
         "buffer::sync" => buffer::sync::handle(channel, room, &val).await,
+        "buffer::save" => buffer::save::handle(channel, room, &val).await,
         _ => {
             tracing::error!("Unkown method request: `{}`", method);
         }
