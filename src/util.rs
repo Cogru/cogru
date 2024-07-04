@@ -79,7 +79,8 @@ pub fn parse_u64(data: Option<String>) -> Option<u64> {
 /// # Arguments
 ///
 /// * `filename` - File path to read.
-pub fn read_to_string(filename: &String) -> String {
+pub fn read_to_string<S: AsRef<str>>(filename: &S) -> String {
+    let filename = filename.as_ref();
     std::fs::read_to_string(filename)
         .expect(format!("⛔ Unable to read the file: {}", filename).as_str())
 }
@@ -89,7 +90,8 @@ pub fn read_to_string(filename: &String) -> String {
 /// # Arguments
 ///
 /// * `string` - String to normalize.
-pub fn normalize_le(string: &String) -> String {
+pub fn normalize_le<S: AsRef<str>>(string: &S) -> String {
+    let string = string.as_ref();
     String::from_iter(normalized(string.chars()))
 }
 
@@ -100,7 +102,8 @@ pub fn normalize_le(string: &String) -> String {
 /// * `addr` - Socket address used to get the client's project path.
 /// * `room` - Used to get client and room path.
 /// * `path` - Path we want to convert.
-pub fn to_room_path(addr: &SocketAddr, room: &Room, path: &str) -> String {
+pub fn to_room_path<S: AsRef<str>>(addr: &SocketAddr, room: &Room, path: S) -> String {
+    let path = path.as_ref();
     let room_path = room.get_path().clone();
     let client = room.get_client(addr).unwrap();
     let project_path = client.get_path();
@@ -113,7 +116,8 @@ pub fn to_room_path(addr: &SocketAddr, room: &Room, path: &str) -> String {
 ///
 /// * `room` - Room object.
 /// * `path` - Path we want to remove room path.
-pub fn no_room_path(room: &Room, path: &str) -> String {
+pub fn no_room_path<S: AsRef<str>>(room: &Room, path: S) -> String {
+    let path = path.as_ref();
     let room_path = room.get_path().clone();
     path.replace(&room_path, "")
 }

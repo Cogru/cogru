@@ -390,30 +390,68 @@ pub mod broadcast {
 /// Update a single client's information.
 pub mod update_client {
     use crate::handler::room::*;
+    use md5;
 
     const METHOD: &str = "room::update_client";
 
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
-        let addr = &channel.get_connection().addr;
+        let addr = &channel.get_connection().addr.clone();
         let mut room = room.lock().await;
-        let client = room.get_client_mut(addr).unwrap();
 
-        if !check_entered(channel, client, METHOD).await {
-            return;
+        {
+            let client = room.get_client_mut(addr).unwrap();
+
+            if !check_entered(channel, client, METHOD).await {
+                return;
+            }
         }
 
         let path = data_str(json, "path");
-        let path = no_client_path(&client, &path);
         let point = data_u64(json, "point");
         let region_beg = data_u64(json, "region_beg");
         let region_end = data_u64(json, "region_end");
         let color_cursor = data_str(json, "color_cursor");
         let color_region = data_str(json, "color_region");
 
+        // Optional
+        let md5_contents = data_str(json, "md5_contents");
+        let contents = data_str(json, "contents");
+
+        let client = room.get_client(addr).unwrap();
+        let rel_path = no_client_path(&client, &path);
+
+        let abs_path = to_room_path(addr, &room, path.unwrap());
+        let file = room.get_file(addr, &abs_path);
+
+        if !file.is_none() {
+            let buffer = file.unwrap().buffer();
+            let buffer_md5 = md5::compute(buffer);
+
+            // `md5_contents` is only optional.
+            if !md5_contents.is_none() {
+                let md5_contents = md5_contents.unwrap();
+
+                if format!("{:x}", buffer_md5) != md5_contents.as_str() {
+                    return;
+                }
+            }
+
+            // `contents` is only optional.
+            if !contents.is_none() {
+                let contents = contents.unwrap();
+
+                if buffer_md5 != md5::compute(contents) {
+                    println!("ret");
+                    return;
+                }
+            }
+        }
+
+        let client = room.get_client_mut(addr).unwrap();
         let user = client.user_mut().unwrap();
 
         user.update(
-            path,
+            rel_path,
             point,
             region_beg,
             region_end,
