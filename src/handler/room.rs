@@ -413,40 +413,8 @@ pub mod update_client {
         let color_cursor = data_str(json, "color_cursor");
         let color_region = data_str(json, "color_region");
 
-        // Optional
-        let md5_contents = data_str(json, "md5_contents");
-        let contents = data_str(json, "contents");
-
         let client = room.get_client(addr).unwrap();
         let rel_path = no_client_path(&client, &path);
-
-        if !path.is_none() {
-            let abs_path = to_room_path(addr, &room, path.unwrap());
-            let file = room.get_file(addr, &abs_path);
-
-            if !file.is_none() {
-                let buffer = file.unwrap().buffer();
-                let buffer_md5 = md5::compute(buffer);
-
-                // `md5_contents` is only optional.
-                if !md5_contents.is_none() {
-                    let md5_contents = md5_contents.unwrap();
-
-                    if format!("{:x}", buffer_md5) != md5_contents.as_str() {
-                        return;
-                    }
-                }
-
-                // `contents` is only optional.
-                if !contents.is_none() {
-                    let contents = contents.unwrap();
-
-                    if buffer_md5 != md5::compute(contents) {
-                        return;
-                    }
-                }
-            }
-        }
 
         let client = room.get_client_mut(addr).unwrap();
         let user = client.user_mut().unwrap();
