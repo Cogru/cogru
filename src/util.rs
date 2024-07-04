@@ -60,6 +60,19 @@ pub fn data_usize(json: &Value, key: &str) -> Option<usize> {
     Some(json[key].to_string().parse::<usize>().unwrap())
 }
 
+/// Get data as isize.
+///
+/// # Arguments
+///
+/// * `json` - JSON object.
+/// * `key` - Key to the data.
+pub fn data_isize(json: &Value, key: &str) -> Option<isize> {
+    if json[key].is_null() {
+        return None;
+    }
+    Some(json[key].to_string().parse::<isize>().unwrap())
+}
+
 /// Parse data to u64.
 ///
 /// # Arguments

@@ -297,7 +297,7 @@ impl Room {
                 continue;
             }
 
-            if _client.user().unwrap().username() == *username {
+            if _client.user().unwrap().username == *username {
                 return true;
             }
         }
@@ -337,13 +337,19 @@ impl Room {
         return (true, "");
     }
 
-    /// Return a list of client.
-    pub fn get_clients(&self) -> Vec<&Client> {
-        self.clients.values().collect::<Vec<&Client>>()
+    /// Return the clients as the HashMap.
+    pub fn get_clients(&self) -> &HashMap<SocketAddr, Client> {
+        &self.clients
+    }
+    pub fn get_clients_mut(&mut self) -> &mut HashMap<SocketAddr, Client> {
+        &mut self.clients
     }
 
-    /// Return a list of client.
-    pub fn get_clients_mut(&mut self) -> Vec<&mut Client> {
+    /// Return the clients as the Vec.
+    pub fn get_clients_vec(&self) -> Vec<&Client> {
+        self.clients.values().collect::<Vec<&Client>>()
+    }
+    pub fn get_clients_vec_mut(&mut self) -> Vec<&mut Client> {
         self.clients.values_mut().collect::<Vec<&mut Client>>()
     }
 
@@ -382,7 +388,7 @@ impl Room {
     /// * `username` - The client username.
     pub fn get_client_by_name(&self, username: &str) -> Option<&Client> {
         for (_addr, client) in self.clients.iter() {
-            if client.user().unwrap().username() == username {
+            if client.user().unwrap().username == username {
                 return Some(client);
             }
         }
@@ -396,7 +402,7 @@ impl Room {
     /// * `username` - The client username.
     pub fn get_client_mut_by_name(&mut self, username: &str) -> Option<&mut Client> {
         for (_addr, client) in self.clients.iter_mut() {
-            if client.user().unwrap().username() == username {
+            if client.user().unwrap().username == username {
                 return Some(client);
             }
         }

@@ -80,11 +80,11 @@ pub mod info {
         let this_user = client.user().unwrap();
 
         // If user is not in the file, ignore it.
-        if this_user.path().is_none() {
+        if this_user.path.is_none() {
             return users;
         }
 
-        for _client in room.get_clients().iter() {
+        for _client in room.get_clients_vec().iter() {
             let user = _client.user();
 
             // User not entered yet.
@@ -100,7 +100,7 @@ pub mod info {
             }
 
             // Ignore when user not visiting any project files.
-            if user.path().is_none() {
+            if user.path.is_none() {
                 continue;
             }
 
@@ -152,7 +152,7 @@ pub mod say {
             return;
         }
 
-        let username = client.user().unwrap().username();
+        let username = client.user().unwrap().username.clone();
 
         let file = data_str(json, "file").unwrap();
         let file = no_room_path(&room, &file);

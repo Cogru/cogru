@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 pub use crate::handler::room::*;
+pub use std::net::SocketAddr;
 
 /// Addition and Deletion to the buffer.
 pub mod update {
@@ -21,22 +22,84 @@ pub mod update {
 
     const METHOD: &str = "buffer::update";
 
+    fn predict_delta(add_or_delete: &String, beg: isize, end: isize) -> isize {
+        if add_or_delete == "delete" {
+            return beg - end;
+        }
+        end - beg
+    }
+
+    fn predict_movement(
+        addr: &SocketAddr,
+        room: &mut Room,
+        add_or_delete: &String,
+        beg: isize,
+        end: isize,
+    ) {
+        let pt = beg;
+        let delta = predict_delta(&add_or_delete, beg, end);
+
+        let clients = room.get_clients_mut();
+
+        for (_addr, _client) in clients.iter_mut() {
+            // Skip for the request client.
+            if _addr == addr {
+                continue;
+            }
+
+            let user = _client.user_mut();
+
+            if user.is_none() {
+                continue;
+            }
+
+            let user = user.unwrap();
+            let point = user.point;
+
+            if point.is_none() {
+                continue;
+            }
+
+            let point = point.unwrap();
+
+            if pt <= point {
+                user.point = Some(point + delta);
+
+                if !user.region_beg.is_none() {
+                    user.region_beg = Some(user.region_beg.unwrap() + delta);
+                    user.region_end = Some(user.region_end.unwrap() + delta);
+                }
+            }
+        }
+    }
+
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
 
         let path = data_str(json, "path").unwrap();
         let add_or_delete = data_str(json, "add_or_delete").unwrap();
-        let beg = data_usize(json, "beg").unwrap();
-        let end = data_usize(json, "end").unwrap();
+        let beg = data_isize(json, "beg").unwrap();
+        let end = data_isize(json, "end").unwrap();
         let contents = data_str(json, "contents").unwrap();
+
+        // Update the buffer view.
+        {
+            let file = room.get_file_create_mut(&addr, &path, None);
+            let file = file.unwrap();
+
+            let rel_file = file.relative_path();
+
+            file.update(&add_or_delete, beg, end, &contents);
+        }
+
+        // Predict mouse movement.
+        predict_movement(addr, &mut room, &add_or_delete, beg, end);
 
         let file = room.get_file_create_mut(&addr, &path, None);
         let file = file.unwrap();
 
         let rel_file = file.relative_path();
-
-        file.update(&add_or_delete, beg, end, &contents);
 
         // Get the peers that are in the file.
         let peers = room.peers_by_file(&room, &rel_file);

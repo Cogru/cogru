@@ -17,14 +17,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct User {
-    username: String,
-    path: Option<String>, // the user's location
-    point: Option<u64>,
-    region_beg: Option<u64>,
-    region_end: Option<u64>,
+    pub username: String,
+    pub path: Option<String>, // the user's location
+    pub point: Option<isize>,
+    pub region_beg: Option<isize>,
+    pub region_end: Option<isize>,
     // Color definition
-    color_cursor: Option<String>, // hex
-    color_region: Option<String>, // hex
+    pub color_cursor: Option<String>, // hex
+    pub color_region: Option<String>, // hex
 }
 
 impl User {
@@ -40,40 +40,12 @@ impl User {
         }
     }
 
-    pub fn username(&self) -> String {
-        self.username.clone()
-    }
-
-    pub fn path(&self) -> Option<String> {
-        self.path.clone()
-    }
-
-    pub fn point(&self) -> Option<u64> {
-        self.point
-    }
-
-    pub fn region_beg(&self) -> Option<u64> {
-        self.region_beg
-    }
-
-    pub fn region_end(&self) -> Option<u64> {
-        self.region_end
-    }
-
-    pub fn color_cursor(&self) -> Option<String> {
-        self.color_cursor.clone()
-    }
-
-    pub fn color_region(&self) -> Option<String> {
-        self.color_region.clone()
-    }
-
     pub fn update(
         &mut self,
         path: Option<String>,
-        point: Option<u64>,
-        region_beg: Option<u64>,
-        region_end: Option<u64>,
+        point: Option<isize>,
+        region_beg: Option<isize>,
+        region_end: Option<isize>,
         color_cursor: Option<String>,
         color_region: Option<String>,
     ) {

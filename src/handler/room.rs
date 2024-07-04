@@ -100,7 +100,7 @@ pub mod exit {
         }
 
         let user = client.user();
-        let username = user.unwrap().username();
+        let username = user.unwrap().username.clone();
 
         // Leave the room
         client.exit_room();
@@ -328,7 +328,7 @@ pub mod kick {
             return;
         }
 
-        let admin_name = client.user().unwrap().username();
+        let admin_name = client.user().unwrap().username.clone();
         // target user to kick out
         let target_name = data_str(json, "username").unwrap();
 
@@ -370,7 +370,7 @@ pub mod broadcast {
         let room = room.lock().await;
         let client = room.get_client(addr).unwrap();
 
-        let username = client.user().unwrap().username();
+        let username = client.user().unwrap().username.clone();
 
         if !check_entered(channel, client, METHOD).await {
             return;
@@ -407,9 +407,9 @@ pub mod update_client {
         }
 
         let path = data_str(json, "path");
-        let point = data_u64(json, "point");
-        let region_beg = data_u64(json, "region_beg");
-        let region_end = data_u64(json, "region_end");
+        let point = data_isize(json, "point");
+        let region_beg = data_isize(json, "region_beg");
+        let region_end = data_isize(json, "region_end");
         let color_cursor = data_str(json, "color_cursor");
         let color_region = data_str(json, "color_region");
 
@@ -420,29 +420,30 @@ pub mod update_client {
         let client = room.get_client(addr).unwrap();
         let rel_path = no_client_path(&client, &path);
 
-        let abs_path = to_room_path(addr, &room, path.unwrap());
-        let file = room.get_file(addr, &abs_path);
+        if !path.is_none() {
+            let abs_path = to_room_path(addr, &room, path.unwrap());
+            let file = room.get_file(addr, &abs_path);
 
-        if !file.is_none() {
-            let buffer = file.unwrap().buffer();
-            let buffer_md5 = md5::compute(buffer);
+            if !file.is_none() {
+                let buffer = file.unwrap().buffer();
+                let buffer_md5 = md5::compute(buffer);
 
-            // `md5_contents` is only optional.
-            if !md5_contents.is_none() {
-                let md5_contents = md5_contents.unwrap();
+                // `md5_contents` is only optional.
+                if !md5_contents.is_none() {
+                    let md5_contents = md5_contents.unwrap();
 
-                if format!("{:x}", buffer_md5) != md5_contents.as_str() {
-                    return;
+                    if format!("{:x}", buffer_md5) != md5_contents.as_str() {
+                        return;
+                    }
                 }
-            }
 
-            // `contents` is only optional.
-            if !contents.is_none() {
-                let contents = contents.unwrap();
+                // `contents` is only optional.
+                if !contents.is_none() {
+                    let contents = contents.unwrap();
 
-                if buffer_md5 != md5::compute(contents) {
-                    println!("ret");
-                    return;
+                    if buffer_md5 != md5::compute(contents) {
+                        return;
+                    }
                 }
             }
         }
@@ -472,7 +473,7 @@ pub mod info {
     fn get_users(room: &Room) -> Vec<User> {
         let mut users = Vec::new();
 
-        for client in room.get_clients().iter() {
+        for client in room.get_clients_vec().iter() {
             let user = client.user();
 
             // User not entered yet.
@@ -578,8 +579,8 @@ pub mod find_user {
 
         let user = client.user().unwrap();
 
-        let path = user.path().unwrap();
-        let point = user.point().unwrap();
+        let path = user.path.clone().unwrap();
+        let point = user.point.unwrap();
 
         channel
             .send_json(&serde_json::json!({

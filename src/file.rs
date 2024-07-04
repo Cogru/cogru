@@ -80,8 +80,11 @@ impl File {
         self.save();
     }
 
-    pub fn update(&mut self, add_or_delete: &String, beg: usize, end: usize, contents: &String) {
+    pub fn update(&mut self, add_or_delete: &String, beg: isize, end: isize, contents: &String) {
         let view = self.view.as_mut().unwrap();
+
+        let beg = beg as usize;
+        let end = end as usize;
 
         match add_or_delete.clone().as_str() {
             "add" => {
