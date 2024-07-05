@@ -87,4 +87,40 @@ impl Client {
         self.user = None;
         self.entered = false;
     }
+
+    pub fn move_by_delta(
+        &mut self,
+        _point: isize,
+        _delta: isize,
+        _filename: Option<String>,
+    ) -> Option<String> {
+        let user = self.user_mut();
+
+        // Exit when user hasn't been created.
+        if user.is_none() {
+            return None;
+        }
+
+        let user = user.unwrap();
+        let filename = user.path.clone();
+
+        // Exit when current user isn't in any valid file.
+        if filename.is_none() {
+            return None;
+        }
+
+        let filename = filename.unwrap();
+
+        if !_filename.is_none() {
+            let _filename = _filename.unwrap();
+
+            if filename != _filename {
+                return None;
+            }
+        }
+
+        user.move_by_delta(_point, _delta);
+
+        Some(filename)
+    }
 }

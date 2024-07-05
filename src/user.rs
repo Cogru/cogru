@@ -56,4 +56,34 @@ impl User {
         self.color_cursor = color_cursor;
         self.color_region = color_region;
     }
+
+    /// Move point information by delta.
+    ///
+    /// # Arguments
+    ///
+    /// * `_point` - Only effect point after the origin.
+    /// * `_delta` - Movement delta.
+    pub fn move_by_delta(&mut self, _point: isize, _delta: isize) {
+        // Point must exists.
+        if self.point.is_none() {
+            return;
+        }
+
+        let point = self.point.unwrap();
+
+        // Shift the point.
+        if _point <= point {
+            self.point = Some(point + _delta);
+
+            // `region_beg`. and `region_end` must exists at the same time.
+            if !self.region_beg.is_none() {
+                let region_beg = self.region_beg.unwrap();
+                let region_end = self.region_end.unwrap();
+
+                // Shift the region.
+                self.region_beg = Some(region_beg + _delta);
+                self.region_end = Some(region_end + _delta);
+            }
+        }
+    }
 }

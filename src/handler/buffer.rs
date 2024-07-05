@@ -22,6 +22,22 @@ pub mod update {
 
     const METHOD: &str = "buffer::update";
 
+    fn predict_movement(addr: &SocketAddr, room: &mut Room, point: isize, delta: isize) {
+        let client = room.get_client_mut(addr).unwrap();
+
+        let filename = client.move_by_delta(point, delta, None);
+
+        let clients = room.get_clients_mut();
+
+        for (_addr, _client) in clients.iter_mut() {
+            if _addr == addr {
+                continue;
+            }
+
+            _client.move_by_delta(point, delta, filename.clone());
+        }
+    }
+
     pub async fn handle(channel: &mut Channel, room: &Arc<Mutex<Room>>, json: &Value) {
         let addr = &channel.get_connection().addr;
         let mut room = room.lock().await;
@@ -31,6 +47,22 @@ pub mod update {
         let beg = data_isize(json, "beg").unwrap();
         let end = data_isize(json, "end").unwrap();
         let contents = data_str(json, "contents").unwrap();
+
+        // Predict movement.
+        {
+            let delta = if add_or_delete == "delete" {
+                beg - end
+            } else {
+                end - beg
+            };
+
+            // Nothing has changed; return it.
+            if delta == 0 {
+                return;
+            }
+
+            predict_movement(&addr, &mut room, beg, delta);
+        }
 
         // Update the buffer view.
         let file = room.get_file_create_mut(&addr, &path, None);
