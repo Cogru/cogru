@@ -88,8 +88,22 @@ impl Client {
         self.entered = false;
     }
 
-    pub fn move_by_delta(
+    pub fn move_self(&mut self, _point: isize) -> Option<String> {
+        self.move_by_delta(true, _point, 0, None)
+    }
+
+    pub fn move_other(
         &mut self,
+        _point: isize,
+        _delta: isize,
+        _filename: Option<String>,
+    ) -> Option<String> {
+        self.move_by_delta(false, _point, _delta, _filename)
+    }
+
+    fn move_by_delta(
+        &mut self,
+        _sender_p: bool,
         _point: isize,
         _delta: isize,
         _filename: Option<String>,
@@ -119,7 +133,7 @@ impl Client {
             }
         }
 
-        user.move_by_delta(_point, _delta);
+        user.move_by_delta(_sender_p, _point, _delta);
 
         Some(filename)
     }

@@ -61,9 +61,10 @@ impl User {
     ///
     /// # Arguments
     ///
+    /// * `_sender` - Boolean return true if the user is the sender.
     /// * `_point` - Only effect point after the origin.
     /// * `_delta` - Movement delta.
-    pub fn move_by_delta(&mut self, _point: isize, _delta: isize) {
+    pub fn move_by_delta(&mut self, _sender: bool, _point: isize, _delta: isize) {
         // Point must exists.
         if self.point.is_none() {
             return;
@@ -73,7 +74,7 @@ impl User {
 
         // Shift the point.
         if _point <= point {
-            self.point = Some(point + _delta);
+            self.point = Some(if _sender { point } else { point + _delta });
 
             // `region_beg`. and `region_end` must exists at the same time.
             if !self.region_beg.is_none() {
@@ -81,8 +82,10 @@ impl User {
                 let region_end = self.region_end.unwrap();
 
                 // Shift the region.
-                self.region_beg = Some(region_beg + _delta);
-                self.region_end = Some(region_end + _delta);
+                //
+                // If the sender, just set to the point.
+                self.region_beg = Some(if _sender { point } else { region_beg + _delta });
+                self.region_end = Some(if _sender { point } else { region_end + _delta });
             }
         }
     }

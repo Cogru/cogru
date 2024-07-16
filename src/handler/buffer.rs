@@ -25,7 +25,7 @@ pub mod update {
     fn predict_movement(addr: &SocketAddr, room: &mut Room, point: isize, delta: isize) {
         let client = room.get_client_mut(addr).unwrap();
 
-        let filename = client.move_by_delta(point, delta, None);
+        let filename = client.move_self(point);
 
         let clients = room.get_clients_mut();
 
@@ -34,7 +34,7 @@ pub mod update {
                 continue;
             }
 
-            _client.move_by_delta(point, delta, filename.clone());
+            _client.move_other(point, delta, filename.clone());
         }
     }
 
@@ -50,18 +50,20 @@ pub mod update {
 
         // Predict movement.
         {
-            let delta = if add_or_delete == "delete" {
-                beg - end
-            } else {
-                end - beg
-            };
+            let is_delete = add_or_delete == "delete";
+
+            // Predict the movement shift.
+            let delta = if is_delete { beg - end } else { end - beg };
+
+            // Predict the cursor final position.
+            let start = if is_delete { beg } else { end };
 
             // Nothing has changed; return it.
             if delta == 0 {
                 return;
             }
 
-            predict_movement(&addr, &mut room, beg, delta);
+            predict_movement(&addr, &mut room, start, delta);
         }
 
         // Update the buffer view.
