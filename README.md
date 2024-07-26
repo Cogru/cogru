@@ -19,6 +19,13 @@ to be entered.
 $ cogru . --no-password
 ```
 
+## 💡 Rationale
+
+Cogru aims to streamline pair programming, ensuring it operates seamlessly
+without duplicating the features of other existing software, such as chat and
+screen sharing. Our focus will be solely on enhancing the editing experience
+and facilitating communication between workspaces from start to finish.
+
 ## 🪵 Client Implementation
 
 - [ ] Emacs ([cogru.el][])
@@ -34,7 +41,7 @@ $ cogru . --no-password
 - [tandem][]
 - [duckly][] (malware?)
 
-## ⚜️ License
+## ⚜ License
 
 Copyright 2024-present Cogru Inc.
 
