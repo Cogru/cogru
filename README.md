@@ -5,6 +5,20 @@
 
 [![CI](https://github.com/Cogru/cogru/actions/workflows/test.yml/badge.svg)](https://github.com/Cogru/cogru/actions/workflows/test.yml)
 
+## 💡 Rationale
+
+Cogru aims to streamline pair programming, ensuring it operates seamlessly
+without duplicating the features of other existing software, such as chat and
+screen sharing. Our focus will be solely on enhancing the editing experience
+and facilitating communication between workspaces from start to finish.
+
+Here is a list of features I want Cogru to achieve:
+
+- **Text Editing**, minimal lag as possible
+- **Configurable**, allows you to release the power of the server's settings.
+- **Interactable** commands that you can use to communicate with your co-workers!
+- **Manageable**, take care of the logging, admin, and the workspace's permission.
+
 ## 🚧 Project status
 
 The code in this repository is currently under active development, and may
@@ -18,13 +32,6 @@ to be entered.
 ```sh
 $ cogru . --no-password
 ```
-
-## 💡 Rationale
-
-Cogru aims to streamline pair programming, ensuring it operates seamlessly
-without duplicating the features of other existing software, such as chat and
-screen sharing. Our focus will be solely on enhancing the editing experience
-and facilitating communication between workspaces from start to finish.
 
 ## 🪵 Client Implementation
 
