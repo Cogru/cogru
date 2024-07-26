@@ -35,7 +35,7 @@ $ cogru . --no-password
 
 ## 🪵 Client Implementation
 
-- [ ] Emacs ([cogru.el][])
+- [x] Emacs ([cogru.el][])
 - [ ] Sublime Text ([cogru-sublime][])
 - [ ] Vim
 - [ ] VSCode
