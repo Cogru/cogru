@@ -96,6 +96,7 @@ mod ping {
             .send_json(&serde_json::json!({
                 "method": METHOD,
                 "timestamp": chrono::offset::Local::now().to_string(),
+                "status": ST_SUCCESS,
             }))
             .await;
     }

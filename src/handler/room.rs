@@ -390,7 +390,6 @@ pub mod broadcast {
 /// Update a single client's information.
 pub mod update_client {
     use crate::handler::room::*;
-    use md5;
 
     const METHOD: &str = "room::update_client";
 
