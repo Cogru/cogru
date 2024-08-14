@@ -1,5 +1,7 @@
+<a href="#"><img align="right" src="./etc/logo.png" width="20%"></a>
+
 [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
-<a href="#"><img align="right" src="./etc/logo.png" width="18%"></a>
+
 # cogru
 > Where the collaboration start!?
 
