@@ -1,5 +1,6 @@
 /.git
 /.cogru
+/etc
 
 # macOS
 .DS_Store
