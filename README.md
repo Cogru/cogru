@@ -1,4 +1,5 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Rust Version](https://img.shields.io/badge/Rust-1.91.1+-black.svg?logo=rust)](https://rust-lang.org/)
 
 <a href="#"><img align="right" src="./etc/logo.png" width="15%"></a>
 # cogru
